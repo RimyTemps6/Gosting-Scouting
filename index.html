@@ -42,7 +42,7 @@ img.th{max-width:150px;border-radius:10px}.c{text-align:center;margin-top:12vh}.
 const $=s=>document.querySelector(s),M=$('#main');
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore();
-let U,T,TD,ROLE,subs=[],D={matches:[],pits:[],docs:[],members:[],requests:[]},tab='painel',chat=[];
+let U,T,TD,ROLE,subs=[],D={matches:[],pits:[],docs:[],registry:[],robots:[],members:[],requests:[]},tab='painel',chat=[];
 const ls=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},ss=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 /* ---------- tema ---------- */
 function applyTheme(){const t=ls('theme',{});const r=document.documentElement;r.dataset.mode=t.mode||'light';['bg','card','tx','ac','font'].forEach(k=>t[k]?r.style.setProperty('--'+k,t[k]):r.style.removeProperty('--'+k))}applyTheme();
@@ -76,32 +76,39 @@ async function joinTeam(){const id=$('#tid').value.trim();const t=await db.doc('
  await db.doc('users/'+U.uid).set({teamId:id});location.reload()}
 /* ---------- app ---------- */
 async function enter(role){ROLE=role;TD=(await db.doc('teams/'+T).get()).data();
- ['matches','pits','docs'].forEach(c=>subs.push(db.collection(`teams/${T}/${c}`).orderBy('ts','desc').onSnapshot(s=>{D[c]=s.docs.map(d=>({id:d.id,...d.data()}));if(['painel','scout','pit','analise','docs'].includes(tab))render(true)})));
+ ['matches','pits','docs','registry','robots'].forEach(c=>subs.push(db.collection(`teams/${T}/${c}`).orderBy('ts','desc').onSnapshot(s=>{D[c]=s.docs.map(d=>({id:d.id,...d.data()}));if(['painel','scout','pit','times','robos','analise','docs'].includes(tab))render(true)})));
  subs.push(db.collection(`teams/${T}/members`).onSnapshot(s=>{D.members=s.docs.map(d=>({id:d.id,...d.data()}));(tab==='equipe'||tab==='perfil')&&render(true);userMenu()}));
  if(role==='admin')subs.push(db.collection(`teams/${T}/requests`).onSnapshot(s=>{D.requests=s.docs.map(d=>({id:d.id,...d.data()}));tab==='equipe'&&render(true)}));
- const tabs=[['painel','Painel'],['scout','Partidas'],['pit','Pit'],['analise','Análise'],['ia','IA'],['docs','Biblioteca'],['equipe','Equipe'],['tema','Tema']];
+ const tabs=[['painel','Painel'],['scout','Partidas'],['pit','Pit'],['times','Times'],['robos','Robôs'],['analise','Análise'],['ia','IA'],['docs','Biblioteca'],['equipe','Equipe'],['tema','Tema']];
  $('#nav').innerHTML=tabs.map(t=>`<button data-t="${t[0]}" onclick="tab='${t[0]}';render()">${t[1]}</button>`).join('');userMenu();render()}
 function render(soft){if(soft&&['ia','tema'].includes(tab))return;if(soft&&document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));V[tab]()}
 const num=id=>+($('#'+id).value)||0;
+const nm=t=>(D.registry.find(x=>String(x.number)===String(t))||{}).name||'';
+const dl=()=>`<datalist id="dl_t">${D.registry.map(t=>`<option value="${esc(t.number)}" label="${esc(t.name)} - ${esc(t.rel)}"></option>`).join('')}</datalist>`;
+const rate=(id,l)=>`<div><label>${l}</label><select id="${id}">${[1,2,3,4,5].map(n=>`<option ${n==3?'selected':''}>${n}</option>`).join('')}</select></div>`;
 const opt=a=>a.map(x=>`<option>${x}</option>`).join('');
 const V={
 painel(){const nt=new Set(D.matches.map(x=>x.team)).size;
  M.innerHTML=`<div class="banner" onclick="tab='scout';render()"><span class="bi">+</span><div><h3>Comece o reconhecimento</h3><p>Acompanhe e analise o desempenho das equipes durante as partidas.</p></div></div>
  <h2>Visão geral da equipe</h2><div class="grid"><div class="card stat"><small>Partidas</small><b>${D.matches.length}</b></div><div class="card stat"><small>Times</small><b>${nt}</b></div><div class="card stat"><small>Pit scouts</small><b>${D.pits.length}</b></div><div class="card stat"><small>Membros</small><b>${D.members.length}</b></div></div>
  <div class="card tw"><h3>Últimas partidas</h3><table><tr><th>Time</th><th>Partida</th><th>Resultado</th><th>Pontos</th><th>Por</th></tr>${D.matches.slice(0,8).map(m=>`<tr><td>${esc(m.team)}</td><td>${m.m||''}</td><td>${esc(m.result||'')}</td><td>${(m.auto||0)+(m.tele||0)+(m.end||0)}</td><td>${esc(m.by)}</td></tr>`).join('')}</table></div>`},
-scout(){const sel=(id,l,a)=>`<div><label>${l}</label><select id="${id}">${opt(a)}</select></div>`,inp=(id,l,v='0',t='number')=>`<div><label>${l}</label><input id="${id}" type="${t}" value="${v}"></div>`;
- M.innerHTML=`<h2>Partidas</h2><div class="card"><h3>Partida</h3><div class="grid">${inp('f_team','Time #','','text')}${inp('f_m','Partida #','')}${inp('f_p','Time parceiro (aliança)','','text')}${sel('f_res','Resultado da partida',['Vitória','Derrota','Empate'])}</div>
+scout(){const sel=(id,l,a)=>`<div><label>${l}</label><select id="${id}">${opt(a)}</select></div>`,inp=(id,l,v='0',t='number',li='')=>`<div><label>${l}</label><input id="${id}" type="${t}" value="${v}" ${t==='number'?'min="0"':''} ${li?`list="${li}"`:''}></div>`;
+ M.innerHTML=`<h2>Partidas</h2>${dl()}<div class="card"><h3>Partida</h3><div class="grid">${inp('f_team','Time # (escolha um time salvo ou digite)','','text','dl_t')}${inp('f_m','Partida #','')}${inp('f_p','Time parceiro (aliança)','','text','dl_t')}${sel('f_res','Resultado da partida',['Vitória','Derrota','Empate'])}</div>
  <h3>Pontuação</h3><div class="grid">${inp('f_a','Pontos autônomo')}${inp('f_t','Pontos TeleOp')}${inp('f_e','Pontos endgame')}${inp('f_c','Ciclos')}</div>
  <h3>Jogo</h3><div class="grid">${inp('f_dr','Vezes que derrubou célula')}${sel('f_fl','Coleta dentro da flor',['Sim','Não'])}<div><label>Elementos que atira</label><div id="f_sh"><label style="display:flex;gap:8px;align-items:center;color:var(--tx);font-size:14px;margin:6px 0"><input type="checkbox" value="Pólen" style="width:auto">Pólen</label><label style="display:flex;gap:8px;align-items:center;color:var(--tx);font-size:14px;margin:6px 0"><input type="checkbox" value="Néctar" style="width:auto">Néctar</label></div></div>${sel('f_au','Possui autônomo',['Sim','Parcial','Não'])}${sel('f_br','Robô quebrou',['Não','Sim'])}</div>
- <h3>Eficiência</h3><div class="grid">${inp('f_ca','Tentativas de coleta')}${inp('f_co','Coletas bem-sucedidas')}${inp('f_ta','Tiros tentados')}${inp('f_th','Tiros certos')}${inp('f_pl','Habilidade dos pilotos (1-5)','3')}${inp('f_r','Confiabilidade (1-5)','3')}</div>
+ <h3>Eficiência</h3><div class="grid">${inp('f_ca','Tentativas de coleta')}${inp('f_co','Coletas bem-sucedidas')}${inp('f_ta','Tiros tentados')}${inp('f_th','Tiros certos')}${rate('f_pl','Habilidade dos pilotos (1-5)')}${rate('f_r','Confiabilidade (1-5)')}</div>
  <label>Observações</label><textarea id="f_n" rows="3"></textarea><br><button onclick="saveMatch()">Salvar partida</button></div>
  <div class="card tw"><table><tr><th>Time</th><th>Partida</th><th>Resultado</th><th>Pontos</th><th>Derrub.</th><th>Quebrou</th><th>Obs</th><th>Por</th><th></th></tr>${D.matches.map(m=>`<tr><td>${esc(m.team)}</td><td>${m.m||''}</td><td>${esc(m.result||'')}</td><td>${(m.auto||0)+(m.tele||0)+(m.end||0)}</td><td>${m.drops||0}</td><td>${m.broke||'Não'}</td><td>${esc(m.notes)}</td><td>${esc(m.by)}</td><td><button class="g" onclick="del('matches','${m.id}')">✕</button></td></tr>`).join('')}</table></div>`},
 pit(){const sel=(id,l,a)=>`<div><label>${l}</label><select id="${id}">${opt(a)}</select></div>`;
- M.innerHTML=`<h2>Pit scouting</h2><div class="card"><div class="grid"><div><label>Time #</label><input id="p_team"></div><div><label>Nome</label><input id="p_name"></div>
+ M.innerHTML=`<h2>Pit scouting</h2>${dl()}<div class="card"><div class="grid"><div><label>Time #</label><input id="p_team" list="dl_t"></div><div><label>Nome</label><input id="p_name"></div>
  ${sel('p_base','Tipo de base',['Mecanum','Tração 4x4','Swerve','Tank','Outra'])}${sel('p_sh','Tipo de shooter',['Flywheel único','Flywheel duplo','Turret','Hood ajustável','Outro','Não possui'])}${sel('p_rt','Tipo de robô',['Atirador','Coletor','Híbrido','Defesa'])}<div><label>Linguagem</label><input id="p_lang"></div></div>
  <label>Mecanismos / capacidades</label><textarea id="p_mech" rows="2"></textarea><label>Foto do robô</label><input type="file" id="p_img" accept="image/*"><br><br><button onclick="savePit()">Salvar</button></div>
  ${D.pits.map(p=>`<div class="card"><b>${esc(p.team)} - ${esc(p.name)}</b> <button class="g" onclick="del('pits','${p.id}')">✕</button><br>Base: ${esc(p.base||p.dt||'-')} | Shooter: ${esc(p.shooter||'-')} | Tipo: ${esc(p.rtype||'-')} | ${esc(p.lang)}<br>${esc(p.mech)}<br>${p.img?`<img class="th" src="${p.img}">`:''}</div>`).join('')}`},
+times(){M.innerHTML=`<h2>Times</h2><div class="card"><h3>Cadastrar time</h3><p style="color:var(--mu);margin-top:0">Times salvos aparecem para escolher nas Partidas, no Pit e nos Robôs.</p><div class="grid"><div><label>Número</label><input id="r_n"></div><div><label>Nome</label><input id="r_name"></div><div><label>Relação</label><select id="r_rel">${opt(['Amistosa','Adversária','Neutra'])}</select></div></div><br><button onclick="saveTeam()">Salvar time</button></div>
+ <div class="card tw"><table><tr><th>Número</th><th>Nome</th><th>Relação</th><th>Partidas</th><th></th></tr>${[...D.registry].sort((a,b)=>String(a.number).localeCompare(String(b.number),undefined,{numeric:true})).map(t=>`<tr><td><b>${esc(t.number)}</b></td><td>${esc(t.name)}</td><td>${esc(t.rel)}</td><td>${D.matches.filter(m=>String(m.team)===String(t.number)).length}</td><td><button class="g" onclick="del('registry','${t.id}')">Excluir</button></td></tr>`).join('')}</table></div>`},
+robos(){M.innerHTML=`<h2>Robôs</h2>${dl()}<div class="card"><h3>Cadastrar robô</h3><div class="grid"><div><label>Nome do robô</label><input id="b_name"></div><div><label>Equipe (número)</label><input id="b_team" list="dl_t"></div></div><label>Observações</label><input id="b_n"><label>Foto do robô</label><input type="file" id="b_img" accept="image/*"><br><br><button onclick="saveRobot()">Salvar robô</button></div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">${D.robots.map(r=>`<div class="card" style="padding:0;overflow:hidden">${r.img?`<img src="${r.img}" style="width:100%;height:190px;object-fit:cover;display:block">`:`<div style="height:190px;background:var(--bg)"></div>`}<div style="padding:14px"><b>${esc(r.name)}</b><br><small style="color:var(--mu)">Equipe ${esc(r.team)} ${esc(nm(r.team))}</small><p>${esc(r.notes||'')}</p><button class="g" onclick="del('robots','${r.id}')">Excluir</button></div></div>`).join('')}</div>`},
 analise(){const m={};D.matches.forEach(x=>{const a=m[x.team]||(m[x.team]={n:0,pts:0,dr:0,fl:0,au:0,br:0,ca:0,co:0,ta:0,th:0,tele:0,cy:0,pl:0,w:0,l:0,e:0});
  a.n++;a.pts+=(x.auto||0)+(x.tele||0)+(x.end||0);a.dr+=x.drops||0;a.fl+=x.flower==='Sim'?1:0;a.au+=x.hasAuto==='Sim'?1:0;a.br+=x.broke==='Sim'?1:0;a.ca+=x.collAtt||0;a.co+=x.coll||0;a.ta+=x.shotAtt||0;a.th+=x.shotHit||0;a.tele+=x.tele||0;a.cy+=x.cycles||0;a.pl+=x.driver||0;
  if(x.result==='Vitória')a.w++;else if(x.result==='Derrota')a.l++;else if(x.result==='Empate')a.e++});
@@ -109,7 +116,7 @@ analise(){const m={};D.matches.forEach(x=>{const a=m[x.team]||(m[x.team]={n:0,pt
  const rows=Object.entries(m).map(([k,a])=>({k,a})).sort((x,y)=>y.a.pts/y.a.n-x.a.pts/x.a.n),tot=D.matches.length,sum=rows.reduce((s,r)=>s+r.a.pts,0);
  M.innerHTML=`<h2>Análise geral</h2><div class="grid"><div class="card stat"><small>Média geral de pontos</small><b>${f(sum,tot)}</b><span>${tot} partidas</span></div>${rows.slice(0,3).map((r,i)=>`<div class="card stat"><small>Top ${i+1}</small><b>${esc(r.k)}</b><span>${f(r.a.pts,r.a.n)} pts médios</span></div>`).join('')}</div>
  <div class="card tw"><h3>Ranking e eficiência por time</h3><table><tr><th>#</th><th>Time</th><th>Partidas</th><th>Média pts</th><th>Derrub./jogo</th><th>Flor</th><th>Autônomo</th><th>Quebras</th><th>Efic. coleta</th><th>Efic. tiro (pts/ciclo)</th><th>Acertos</th><th>Pilotos</th><th>V-D-E</th><th>Base</th><th>Shooter</th><th>Tipo</th></tr>
- ${rows.map((r,i)=>{const a=r.a,q=pit(r.k);return `<tr><td>${i+1}</td><td><b>${esc(r.k)}</b></td><td>${a.n}</td><td>${f(a.pts,a.n)}</td><td>${f(a.dr,a.n)}</td><td>${p(a.fl,a.n)}</td><td>${p(a.au,a.n)}</td><td>${p(a.br,a.n)}</td><td>${p(a.co,a.ca)}</td><td>${f(a.tele,a.cy)}</td><td>${p(a.th,a.ta)}</td><td>${f(a.pl,a.n)}</td><td>${a.w}-${a.l}-${a.e}</td><td>${esc(q.base||'-')}</td><td>${esc(q.shooter||'-')}</td><td>${esc(q.rtype||'-')}</td></tr>`}).join('')}</table></div>`},
+ ${rows.map((r,i)=>{const a=r.a,q=pit(r.k);return `<tr><td>${i+1}</td><td><b>${esc(r.k)}</b> ${esc(nm(r.k))}</td><td>${a.n}</td><td>${f(a.pts,a.n)}</td><td>${f(a.dr,a.n)}</td><td>${p(a.fl,a.n)}</td><td>${p(a.au,a.n)}</td><td>${p(a.br,a.n)}</td><td>${p(a.co,a.ca)}</td><td>${f(a.tele,a.cy)}</td><td>${p(a.th,a.ta)}</td><td>${f(a.pl,a.n)}</td><td>${a.w}-${a.l}-${a.e}</td><td>${esc(q.base||'-')}</td><td>${esc(q.shooter||'-')}</td><td>${esc(q.rtype||'-')}</td></tr>`}).join('')}</table></div>`},
 ia(){const a=ls('ai',{base:'https://integrate.api.nvidia.com/v1',model:'meta/llama-3.1-70b-instruct',key:'',fk:'',fr:'',vis:false});
  M.innerHTML=`<div class="card"><details><summary> Configurar IA (salvo só neste navegador)</summary><div class="grid">
  <div><label>Provedor</label><select onchange="preset(this.value)"><option value="">Escolher...</option><option value="https://integrate.api.nvidia.com/v1|meta/llama-3.1-70b-instruct">NVIDIA</option><option value="https://openrouter.ai/api/v1|meta-llama/llama-3.1-70b-instruct">OpenRouter</option><option value="https://api.openai.com/v1|gpt-4o-mini">OpenAI</option></select></div>
@@ -142,12 +149,16 @@ function toggleDark(){const t=ls('theme',{});t.mode=t.mode==='dark'?'light':'dar
 async function saveProfile(){const f=$('#pf_i').files[0],d={name:$('#pf_n').value.trim()||U.displayName,bio:$('#pf_b').value};if(f)d.banner=await shrink(f,1200);
  await db.doc(`teams/${T}/members/${U.uid}`).update(d);alert('Perfil salvo')}
 const rmBanner=()=>db.doc(`teams/${T}/members/${U.uid}`).update({banner:''});
+async function saveTeam(){const n=$('#r_n').value.trim();if(!n)return alert('Informe o número');if(D.registry.some(x=>String(x.number)===n))return alert('Esse time já está salvo');
+ await db.collection(`teams/${T}/registry`).add({number:n,name:$('#r_name').value.trim(),rel:$('#r_rel').value,ts:Date.now()});$('#r_n').value='';$('#r_name').value=''}
+async function saveRobot(){const f=$('#b_img').files[0],n=$('#b_name').value.trim();if(!n)return alert('Informe o nome do robô');
+ await db.collection(`teams/${T}/robots`).add({name:n,team:$('#b_team').value.trim(),notes:$('#b_n').value,img:f?await shrink(f,800):'',ts:Date.now()});alert('Robô salvo')}
 const expel=id=>confirm('Expulsar este membro da equipe?')&&db.doc(`teams/${T}/members/${id}`).delete();
 function resetTheme(){localStorage.removeItem('theme');applyTheme();const m=$('#menu');if(m)m.hidden=true;render()}
 async function leaveTeam(){if(TD.ownerId===U.uid)return alert('Você criou a equipe. Para sair, exclua a equipe.');
  if(!confirm('Sair da equipe?'))return;await db.doc(`teams/${T}/members/${U.uid}`).delete();await db.doc('users/'+U.uid).delete();location.reload()}
 async function deleteTeam(){if(ROLE!=='admin')return;if(prompt('Isso apaga a equipe e TODOS os dados. Digite EXCLUIR para confirmar:')!=='EXCLUIR')return;
- for(const c of ['matches','pits','docs','requests'])for(const d of (await db.collection(`teams/${T}/${c}`).get()).docs)await d.ref.delete();
+ for(const c of ['matches','pits','docs','registry','robots','requests'])for(const d of (await db.collection(`teams/${T}/${c}`).get()).docs)await d.ref.delete();
  for(const d of (await db.collection(`teams/${T}/members`).get()).docs)if(d.id!==U.uid)await d.ref.delete();
  await db.doc('teams/'+T).delete();await db.doc(`teams/${T}/members/${U.uid}`).delete();await db.doc('users/'+U.uid).delete();location.reload()}
 const del=(c,id)=>confirm('Apagar?')&&db.doc(`teams/${T}/${c}/${id}`).delete();
@@ -172,7 +183,7 @@ const chatHtml=(m,i)=>`<div class="msg ${m.role==='user'?'u':'a'}">${esc(m.conte
 function context(){const sc=D.matches.slice(0,150).map(m=>`T${m.team} P${m.m} ${m.result||""} parceiro ${m.partner||""}: auto${m.auto} tele${m.tele} end${m.end} ciclos${m.cycles} derrubou${m.drops||0} flor:${m.flower||""} atira:${m.shoots||""} autonomo:${m.hasAuto||""} quebrou:${m.broke||""} coleta ${m.coll||0}/${m.collAtt||0} tiros ${m.shotHit||0}/${m.shotAtt||0} piloto${m.driver||""} "${m.notes}"`).join('\n');
  const pit=D.pits.map(p=>`T${p.team} ${p.name}: base ${p.base}, shooter ${p.shooter}, tipo ${p.rtype}, ${p.lang}, ${p.mech}`).join('\n');
  let docs='';for(const d of D.docs.filter(d=>d.kind==='text')){if(docs.length>90000)break;docs+=`\n### ${d.name}\n${d.text}`}
- return `Você é o assistente de scouting FTC da equipe ${TD.name} #${TD.number} (Ghosting Scouting). Responda em português, usando os dados abaixo e citando o documento quando usar regras.\n\n## PARTIDAS\n${sc}\n\n## PIT\n${pit}\n\n## DOCUMENTOS${docs.slice(0,90000)}`}
+ return `Você é o assistente de scouting FTC da equipe ${TD.name} #${TD.number} (Ghosting Scouting). Responda em português, usando os dados abaixo e citando o documento quando usar regras.\n\n## PARTIDAS\n${sc}\n\n## PIT\n${pit}\n\n## TIMES CADASTRADOS\n${D.registry.map(t=>`T${t.number} ${t.name} (${t.rel})`).join('\n')}\n\n## ROBOS\n${D.robots.map(r=>`${r.name} (time ${r.team})`).join('\n')}\n\n## DOCUMENTOS${docs.slice(0,90000)}`}
 async function ask(){const a=ls('ai',{});if(!a.key)return alert('Configure a API key');const q=$('#q').value.trim();if(!q)return;$('#q').value='';
  chat.push({role:'user',content:q});render();const msgs=[{role:'system',content:context()},...chat.slice(-10)];
  if(a.vis){const im=D.docs.filter(d=>d.kind==='img').slice(0,3).map(d=>({type:'image_url',image_url:{url:d.img}}));if(im.length)msgs[msgs.length-1]={role:'user',content:[{type:'text',text:q},...im]}}

@@ -27,7 +27,7 @@ service cloud.firestore {
         allow delete: if admin(t) || (signed() && request.auth.uid == r);
       }
       match /{coll}/{doc} {
-        allow read, write: if member(t) && coll in ['matches','pits','docs'];
+        allow read, write: if member(t) && coll in ['matches','pits','docs','registry','robots'];
       }
     }
   }
