@@ -30,6 +30,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);border-color
 .msg{padding:12px 14px;border-radius:12px;margin:8px 0;white-space:pre-wrap}.u{background:var(--bg)}.a{background:#f9731618;border:1px solid #f9731640}
 img.th{max-width:150px;border-radius:10px}.c{text-align:center;margin-top:12vh}.c h1{font-size:36px}pre{white-space:pre-wrap;font-size:12px}summary{cursor:pointer;font-weight:600}
 .pb{height:170px;background:linear-gradient(135deg,#f97316,#fdba74) center/cover}.pav{width:84px;height:84px;border-radius:50%;border:4px solid var(--card);margin-top:-42px;background:var(--bg);object-fit:cover}.mb{height:60px;background:center/cover}
+.chat{display:grid;grid-template-columns:280px 1fr;gap:16px}.ci{padding:10px;border-radius:10px;cursor:pointer;margin-bottom:4px}.ci.on,.ci:hover{background:var(--bg)}.ci small{display:block;color:var(--ac)}.ms{flex:1;overflow-y:auto;margin:10px 0;display:flex;flex-direction:column;gap:6px}.bm{max-width:75%;padding:8px 12px;border-radius:12px;background:var(--bg)}.bm.me{align-self:flex-end;background:#f9731626}.bm small{color:var(--mu);font-size:11px}
+#dock{position:fixed;right:16px;bottom:16px;width:min(560px,calc(100vw - 32px));z-index:30;box-shadow:0 12px 40px #0005;max-height:80vh;overflow:auto;margin:0}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}.tile{position:relative;background:#000;border-radius:10px;overflow:hidden;min-height:90px}.tile video{width:100%;display:block;max-height:240px;background:#000}.tile span{position:absolute;left:8px;top:6px;color:#fff;font-size:12px;background:#0008;padding:2px 6px;border-radius:6px}.tile button{position:absolute;right:6px;bottom:6px;padding:4px 8px;font-size:12px}.ctl{display:flex;gap:6px;flex-wrap:wrap}.ctl button{padding:7px 10px;font-size:13px}
+@media(max-width:800px){.chat{grid-template-columns:1fr}}
 </style></head><body>
 <header><div class="brand"><span class="logo">G</span>Ghosting Scouting<span class="pill">BETA</span></div><div class="um" id="um"></div></header>
 <nav id="nav"></nav><main id="main"></main>
@@ -41,7 +44,8 @@ img.th{max-width:150px;border-radius:10px}.c{text-align:center;margin-top:12vh}.
 <script>
 const $=s=>document.querySelector(s),M=$('#main');
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+let chatSub=null,CUR={type:'group'},ME={},DMS=[],PEERS={},watchSubs={},CALL=null;const auth=firebase.auth(),db=firebase.firestore();
 let U,T,TD,ROLE,subs=[],D={matches:[],pits:[],docs:[],registry:[],robots:[],members:[],requests:[]},tab='painel',chat=[];
 const ls=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},ss=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 /* ---------- tema ---------- */
@@ -53,7 +57,7 @@ async function showRules(){let t='';try{t=await (await fetch('firestore.rules'))
  M.innerHTML=`<div class="card"><h3>Regras do Firestore</h3><button onclick="copyR()"> Copiar tudo</button> <button class="g" onclick="location.reload()">Voltar</button>
  <textarea id="rt" rows="22" readonly onclick="this.select()">${esc(t)}</textarea></div>`}
 function copyR(){const t=$('#rt');t.select();navigator.clipboard.writeText(t.value).then(()=>alert('Copiado!'))}
-auth.onAuthStateChanged(async u=>{U=u;subs.forEach(f=>f());subs=[];userMenu();
+auth.onAuthStateChanged(async u=>{U=u;subs.forEach(f=>f());subs=[];watchSubs={};PEERS={};DMS=[];if(CALL)leaveCall();userMenu();
  if(!u){$('#nav').innerHTML='';M.innerHTML=`<div class="c"><h1> Ghosting Scouting</h1><p>Equipe brainMachine 17728</p><button onclick="login()">Entrar com Google</button> ${rulesBtn}</div>`;return}
  const us=await db.doc('users/'+u.uid).get();T=us.exists?us.data().teamId:null;
  if(!T)return noTeam();
@@ -79,9 +83,9 @@ async function enter(role){ROLE=role;TD=(await db.doc('teams/'+T).get()).data();
  ['matches','pits','docs','registry','robots'].forEach(c=>subs.push(db.collection(`teams/${T}/${c}`).orderBy('ts','desc').onSnapshot(s=>{D[c]=s.docs.map(d=>({id:d.id,...d.data()}));if(['painel','scout','pit','times','robos','analise','docs'].includes(tab))render(true)})));
  subs.push(db.collection(`teams/${T}/members`).onSnapshot(s=>{D.members=s.docs.map(d=>({id:d.id,...d.data()}));(tab==='equipe'||tab==='perfil')&&render(true);userMenu()}));
  if(role==='admin')subs.push(db.collection(`teams/${T}/requests`).onSnapshot(s=>{D.requests=s.docs.map(d=>({id:d.id,...d.data()}));tab==='equipe'&&render(true)}));
- const tabs=[['painel','Painel'],['scout','Partidas'],['pit','Pit'],['times','Times'],['robos','Robôs'],['analise','Análise'],['ia','IA'],['docs','Biblioteca'],['equipe','Equipe'],['tema','Tema']];
- $('#nav').innerHTML=tabs.map(t=>`<button data-t="${t[0]}" onclick="tab='${t[0]}';render()">${t[1]}</button>`).join('');userMenu();render()}
-function render(soft){if(soft&&['ia','tema'].includes(tab))return;if(soft&&document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
+ const tabs=[['painel','Painel'],['scout','Partidas'],['pit','Pit'],['times','Times'],['robos','Robôs'],['analise','Análise'],['ia','IA'],['docs','Biblioteca'],['chat','Chat'],['equipe','Equipe'],['tema','Tema']];
+ $('#nav').innerHTML=tabs.map(t=>`<button data-t="${t[0]}" onclick="tab='${t[0]}';render()">${t[1]}</button>`).join('');userMenu();initChat();render()}
+function render(soft){if(tab!=='chat'&&chatSub){chatSub();chatSub=null}if(soft&&tab==='chat')return;if(soft&&['ia','tema'].includes(tab))return;if(soft&&document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));V[tab]()}
 const num=id=>+($('#'+id).value)||0;
 const nm=t=>(D.registry.find(x=>String(x.number)===String(t))||{}).name||'';
@@ -158,7 +162,7 @@ function resetTheme(){localStorage.removeItem('theme');applyTheme();const m=$('#
 async function leaveTeam(){if(TD.ownerId===U.uid)return alert('Você criou a equipe. Para sair, exclua a equipe.');
  if(!confirm('Sair da equipe?'))return;await db.doc(`teams/${T}/members/${U.uid}`).delete();await db.doc('users/'+U.uid).delete();location.reload()}
 async function deleteTeam(){if(ROLE!=='admin')return;if(prompt('Isso apaga a equipe e TODOS os dados. Digite EXCLUIR para confirmar:')!=='EXCLUIR')return;
- for(const c of ['matches','pits','docs','registry','robots','requests'])for(const d of (await db.collection(`teams/${T}/${c}`).get()).docs)await d.ref.delete();
+ for(const c of ['matches','pits','docs','registry','robots','chat','requests'])for(const d of (await db.collection(`teams/${T}/${c}`).get()).docs)await d.ref.delete();
  for(const d of (await db.collection(`teams/${T}/members`).get()).docs)if(d.id!==U.uid)await d.ref.delete();
  await db.doc('teams/'+T).delete();await db.doc(`teams/${T}/members/${U.uid}`).delete();await db.doc('users/'+U.uid).delete();location.reload()}
 const del=(c,id)=>confirm('Apagar?')&&db.doc(`teams/${T}/${c}/${id}`).delete();
@@ -193,4 +197,79 @@ async function ask(){const a=ls('ai',{});if(!a.key)return alert('Configure a API
 async function speak(i){const a=ls('ai',{});if(!a.fk)return alert('Configure a Fish Audio key');
  try{const r=await fetch('https://api.fish.audio/v1/tts',{method:'POST',headers:{Authorization:'Bearer '+a.fk,'Content-Type':'application/json'},body:JSON.stringify({text:chat[i].content.slice(0,1500),reference_id:a.fr||undefined,format:'mp3'})});
   if(!r.ok)throw new Error(r.status);new Audio(URL.createObjectURL(await r.blob())).play()}catch(e){alert('Erro Fish Audio: '+e.message)}}
+/* ---------- CHAT E CHAMADAS ---------- */
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+const roomG=()=>'t_'+T,roomD=id=>'d_'+id;
+const other=d=>{const k=d.members.find(x=>x!==U.uid);return (d.info&&d.info[k])||{name:'?'}};
+const act=r=>(PEERS[r]||[]).filter(p=>p.id!==U.uid&&Date.now()-(p.ts||0)<40000);
+function roomName(r){if(r===roomG())return 'Grupo da equipe';const d=DMS.find(x=>roomD(x.id)===r);return d?other(d).name:'Conversa'}
+async function initChat(){const pr=db.doc('profiles/'+U.uid),s=await pr.get();let d=s.exists?s.data():{};
+ if(!d.uname)d.uname=(U.displayName||'user').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12)+Math.floor(100+Math.random()*900);
+ d={...d,name:U.displayName,photo:U.photoURL||''};await pr.set(d,{merge:true});ME=d;
+ subs.push(db.collection('dms').where('members','array-contains',U.uid).onSnapshot(q=>{DMS=q.docs.map(x=>({id:x.id,...x.data()}));DMS.forEach(x=>watch(roomD(x.id)));if(tab==='chat')drawList()}));
+ watch(roomG());const iv=setInterval(ring,15000);subs.push(()=>clearInterval(iv))}
+function watch(r){if(watchSubs[r])return;watchSubs[r]=1;subs.push(db.collection(`rooms/${r}/peers`).onSnapshot(q=>{PEERS[r]=q.docs.map(d=>({id:d.id,...d.data()}));ring();if(tab==='chat')drawList()}))}
+function ring(){let b=$('#ring');if(!b){b=document.createElement('div');b.id='ring';b.className='card';b.style.cssText='position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:40;display:none;gap:10px;align-items:center;margin:0;flex-wrap:wrap;justify-content:center';document.body.appendChild(b)}
+ const r=Object.keys(PEERS).find(k=>act(k).length&&(!CALL||CALL.room!==k));if(!r||!U){b.style.display='none';return}
+ b.style.display='flex';b.innerHTML=`<span>Chamada em andamento: <b>${esc(roomName(r))}</b></span><button onclick="joinCall('${r}',false)">Entrar (áudio)</button><button class="g" onclick="joinCall('${r}',true)">Entrar com vídeo</button>`}
+V.chat=function(){M.innerHTML=`<h2>Chat</h2><div class="chat"><div class="card" id="cl"></div><div class="card" id="cm" style="display:flex;flex-direction:column;height:70vh"></div></div>`;openChat(CUR)};
+function drawList(){const e=$('#cl');if(!e||(document.activeElement&&document.activeElement.id==='ad'))return;
+ const it=(on,k,t,sub)=>`<div class="ci ${on?'on':''}" onclick="${k}"><b>${t}</b>${sub?`<small>${sub}</small>`:''}</div>`;
+ e.innerHTML=`<h3>Conversas</h3>${it(CUR.type==='group',"openChat({type:'group'})",'Grupo da equipe',act(roomG()).length?'chamada em andamento':'')}${DMS.map(d=>it(CUR.id===d.id,`openChat({type:'dm',id:'${d.id}'})`,esc(other(d).name),act(roomD(d.id)).length?'chamada em andamento':'')).join('')}
+ <h3>Adicionar pessoa</h3><input id="ad" placeholder="@usuario ou ID"><br><br><button onclick="addPerson()">Adicionar</button>
+ <h3>Seu usuário</h3><small>@${esc(ME.uname)}</small><br><small style="word-break:break-all;color:var(--mu)">ID: ${U.uid}</small><br><br><button class="g" onclick="navigator.clipboard.writeText('${U.uid}');alert('ID copiado')">Copiar ID</button>`}
+function openChat(c){CUR=c;if(chatSub){chatSub();chatSub=null}const e=$('#cm');if(!e)return;
+ const dm=c.type==='dm'?DMS.find(x=>x.id===c.id):null;if(c.type==='dm'&&!dm){CUR={type:'group'};return openChat(CUR)}
+ const room=dm?roomD(dm.id):roomG(),title=dm?other(dm).name:'Grupo da equipe',path=dm?`dms/${dm.id}/messages`:`teams/${T}/chat`;drawList();
+ e.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><h3 style="margin:0;flex:1">${esc(title)}</h3><button class="g" onclick="joinCall('${room}',false)">Ligar</button><button onclick="joinCall('${room}',true)">Vídeo</button></div><div id="ms" class="ms"></div><div style="display:flex;gap:8px"><input id="mi" placeholder="Mensagem" onkeydown="if(event.key==='Enter')sendMsg()"><button onclick="sendMsg()">Enviar</button></div>`;
+ chatSub=db.collection(path).orderBy('ts','desc').limit(100).onSnapshot(q=>{const ms=$('#ms');if(!ms)return;ms.innerHTML=q.docs.reverse().map(d=>{const m=d.data();return `<div class="bm ${m.uid===U.uid?'me':''}"><small>${esc(m.name)}</small><div>${esc(m.text)}</div></div>`}).join('');ms.scrollTop=ms.scrollHeight})}
+async function sendMsg(){const i=$('#mi'),t=i.value.trim();if(!t)return;i.value='';
+ await db.collection(CUR.type==='dm'?`dms/${CUR.id}/messages`:`teams/${T}/chat`).add({text:t.slice(0,2000),uid:U.uid,name:U.displayName,ts:Date.now()})}
+async function addPerson(){const raw=$('#ad').value.trim();if(!raw)return;let p=null;
+ if(!raw.startsWith('@')&&!raw.includes('/')){const s=await db.doc('profiles/'+raw).get().catch(()=>null);if(s&&s.exists)p={id:s.id,...s.data()}}
+ if(!p){const q=await db.collection('profiles').where('uname','==',raw.replace(/^@/,'').toLowerCase()).limit(1).get();if(!q.empty)p={id:q.docs[0].id,...q.docs[0].data()}}
+ if(!p)return alert('Pessoa não encontrada. Ela precisa ter entrado no site ao menos uma vez.');if(p.id===U.uid)return alert('Esse é você');
+ const id=[U.uid,p.id].sort().join('_');
+ await db.doc('dms/'+id).set({members:[U.uid,p.id].sort(),info:{[U.uid]:{name:U.displayName,photo:U.photoURL||''},[p.id]:{name:p.name,photo:p.photo||''}},ts:Date.now()},{merge:true});openChat({type:'dm',id})}
+/* chamadas WebRTC (malha), sinalização via Firestore */
+const send=(to,type,data)=>db.collection(`rooms/${CALL.room}/signals`).add({from:U.uid,to,type,data,ts:Date.now()});
+async function joinCall(room,video){if(CALL)return alert('Você já está em uma chamada');
+ let st;try{st=await navigator.mediaDevices.getUserMedia({audio:true,video:!!video})}catch(e){return alert('Sem acesso ao microfone/câmera: '+e.message)}
+ const sid=Math.random().toString(36).slice(2);
+ CALL={room,sid,pcs:{},streams:{},pend:{},peerSid:{},names:{},muted:{},mic:st.getAudioTracks()[0],cam:st.getVideoTracks()[0]||null,screen:null,subs:[],key:''};drawDock();ring();
+ const sig=db.collection(`rooms/${room}/signals`);for(const d of (await sig.where('to','==',U.uid).get()).docs)await d.ref.delete();
+ CALL.subs.push(sig.where('to','==',U.uid).onSnapshot(q=>q.docChanges().forEach(c=>c.type==='added'&&onSig(c.doc))));
+ const pr=db.doc(`rooms/${room}/peers/${U.uid}`),beat=()=>pr.set({name:U.displayName,sid,ts:Date.now()});await beat();CALL.hb=setInterval(beat,15000);
+ CALL.subs.push(db.collection(`rooms/${room}/peers`).onSnapshot(q=>{if(!CALL||CALL.room!==room)return;const live=new Set();
+  q.docs.forEach(d=>{const p=d.data();if(d.id===U.uid||Date.now()-p.ts>40000)return;live.add(d.id);
+   if(CALL.peerSid[d.id]&&CALL.peerSid[d.id]!==p.sid)dropPeer(d.id);CALL.peerSid[d.id]=p.sid;CALL.names[d.id]=p.name;
+   if(!CALL.pcs[d.id]&&U.uid<d.id)connect(d.id)});
+  Object.keys(CALL.pcs).forEach(k=>!live.has(k)&&dropPeer(k));const key=[...live].sort().join();if(key!==CALL.key){CALL.key=key;drawDock()}}));
+ window.addEventListener('beforeunload',leaveCall)}
+function mkPc(id){const pc=new RTCPeerConnection(ICE),ms=new MediaStream();CALL.streams[id]=ms;CALL.pend[id]=CALL.pend[id]||[];
+ pc.ontrack=e=>{ms.addTrack(e.track);drawDock()};pc.onicecandidate=e=>e.candidate&&CALL&&send(id,'cand',JSON.stringify(e.candidate));CALL.pcs[id]=pc;return pc}
+async function connect(id){const pc=mkPc(id);CALL.mic&&pc.addTrack(CALL.mic,CALL.streams[id]);const tr=pc.addTransceiver('video',{direction:'sendrecv'});pc._vs=tr.sender;await tr.sender.replaceTrack(CALL.screen||CALL.cam||null);
+ await pc.setLocalDescription(await pc.createOffer());send(id,'offer',JSON.stringify(pc.localDescription))}
+async function flush(id){const pc=CALL.pcs[id];for(const c of CALL.pend[id]||[])await pc.addIceCandidate(JSON.parse(c)).catch(()=>{});CALL.pend[id]=[]}
+async function onSig(d){const s=d.data();d.ref.delete();if(!CALL)return;const id=s.from;
+ if(s.type==='offer'){dropPeer(id);const pc=mkPc(id);await pc.setRemoteDescription(JSON.parse(s.data));CALL.mic&&pc.addTrack(CALL.mic,CALL.streams[id]);
+  const vt=pc.getTransceivers().find(t=>t.receiver.track.kind==='video');if(vt){vt.direction='sendrecv';pc._vs=vt.sender;await vt.sender.replaceTrack(CALL.screen||CALL.cam||null)}
+  await flush(id);await pc.setLocalDescription(await pc.createAnswer());send(id,'answer',JSON.stringify(pc.localDescription))}
+ else if(s.type==='answer'){const pc=CALL.pcs[id];if(pc){await pc.setRemoteDescription(JSON.parse(s.data));await flush(id)}}
+ else{const pc=CALL.pcs[id];if(pc&&pc.remoteDescription)pc.addIceCandidate(JSON.parse(s.data)).catch(()=>{});else(CALL.pend[id]=CALL.pend[id]||[]).push(s.data)}}
+function dropPeer(id){const pc=CALL&&CALL.pcs[id];if(pc){pc.close();delete CALL.pcs[id];delete CALL.streams[id]}}
+async function leaveCall(){if(!CALL)return;const c=CALL;CALL=null;clearInterval(c.hb);c.subs.forEach(f=>f());Object.values(c.pcs).forEach(p=>p.close());[c.mic,c.cam,c.screen].forEach(t=>t&&t.stop());
+ try{await db.doc(`rooms/${c.room}/peers/${U.uid}`).delete()}catch{}const d=$('#dock');if(d)d.remove();window.removeEventListener('beforeunload',leaveCall);ring()}
+const toggleMic=()=>{CALL.mic.enabled=!CALL.mic.enabled;drawDock()};
+async function toggleCam(){if(CALL.cam){CALL.cam.stop();CALL.cam=null}else{try{CALL.cam=(await navigator.mediaDevices.getUserMedia({video:true})).getVideoTracks()[0]}catch(e){return alert(e.message)}}setVid()}
+async function toggleScreen(){if(CALL.screen){CALL.screen.stop();CALL.screen=null}else{try{const s=await navigator.mediaDevices.getDisplayMedia({video:true});CALL.screen=s.getVideoTracks()[0];CALL.screen.onended=()=>{if(CALL&&CALL.screen){CALL.screen=null;setVid()}}}catch(e){return}}setVid()}
+function setVid(){const t=CALL.screen||CALL.cam||null;Object.values(CALL.pcs).forEach(p=>p._vs&&p._vs.replaceTrack(t));drawDock()}
+const muteOne=id=>{CALL.muted[id]=!CALL.muted[id];drawDock()};
+const muteAll=()=>{const ids=Object.keys(CALL.pcs),all=ids.every(k=>CALL.muted[k]);ids.forEach(k=>CALL.muted[k]=!all);drawDock()};
+function drawDock(){if(!CALL)return;let d=$('#dock');if(!d){d=document.createElement('div');d.id='dock';d.className='card';document.body.appendChild(d)}
+ const ids=Object.keys(CALL.pcs),on=CALL.mic.enabled;
+ d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><b style="flex:1">${esc(roomName(CALL.room))} (${ids.length+1} na chamada)</b><button class="g" onclick="$('#dtiles').hidden=!$('#dtiles').hidden">Ocultar</button></div>
+ <div id="dtiles" class="tiles"><div class="tile"><video data-id="me" autoplay playsinline muted></video><span>Você</span></div>${ids.map(i=>`<div class="tile"><video data-id="${i}" autoplay playsinline></video><span>${esc(CALL.names[i]||'')}</span><button class="g" onclick="muteOne('${i}')">${CALL.muted[i]?'Ativar som':'Mutar'}</button></div>`).join('')}</div>
+ <div class="ctl"><button class="g" onclick="toggleMic()">${on?'Mutar meu microfone':'Ativar meu microfone'}</button><button class="g" onclick="toggleCam()">${CALL.cam?'Desligar câmera':'Ligar câmera'}</button><button class="g" onclick="toggleScreen()">${CALL.screen?'Parar compartilhamento':'Compartilhar tela'}</button><button class="g" onclick="muteAll()">Mutar todos</button><button style="background:#dc2626" onclick="leaveCall()">Sair</button></div>`;
+ d.querySelectorAll('video').forEach(v=>{const i=v.dataset.id;if(i==='me')v.srcObject=new MediaStream([CALL.screen||CALL.cam].filter(Boolean));else{v.srcObject=CALL.streams[i]||null;v.muted=!!CALL.muted[i]}})}
 </script></body></html>
