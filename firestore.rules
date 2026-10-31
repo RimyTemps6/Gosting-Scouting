@@ -18,7 +18,8 @@ service cloud.firestore {
         allow create: if signed() && request.auth.uid == m
                       && get(/databases/$(database)/documents/teams/$(t)).data.ownerId == request.auth.uid
                       || admin(t);
-        allow update, delete: if admin(t) || (signed() && request.auth.uid == m);
+        allow update: if admin(t) || (signed() && request.auth.uid == m && request.resource.data.role == resource.data.role);
+        allow delete: if admin(t) || (signed() && request.auth.uid == m);
       }
       match /requests/{r} {
         allow create: if signed() && request.auth.uid == r;
