@@ -1,275 +1,64 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ghosting Scouting</title>
-<style>
-:root{--bg:#f8fafc;--card:#fff;--tx:#0f172a;--mu:#64748b;--bd:#e2e8f0;--ac:#f97316;--font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-html[data-mode=dark]{--bg:#0f1115;--card:#181b22;--tx:#f1f5f9;--mu:#94a3b8;--bd:#2a2f3a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--font)}
-header{display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--bd)}
-.brand{display:flex;align-items:center;gap:12px;flex:1;font-size:24px;font-weight:800;letter-spacing:-.5px}
-.logo{width:36px;height:36px;border-radius:10px;background:var(--ac);color:#fff;display:grid;place-items:center;font-size:20px}
-.pill{background:var(--ac);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0}
-.um{position:relative}.uc{display:flex;align-items:center;gap:12px;cursor:pointer;text-align:right}.uc small{display:block;color:var(--mu)}.uc img{width:42px;height:42px;border-radius:50%}
-.menu{position:absolute;right:0;top:54px;width:250px;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:0 10px 30px #0002;z-index:9;padding:6px 0}
-.menu .mh{padding:12px 16px;border-bottom:1px solid var(--bd)}.mh small{display:block;color:var(--mu)}.menu a{display:block;padding:11px 16px;cursor:pointer}.menu a:hover{background:var(--bg)}
-nav{display:flex;gap:6px;padding:0 20px;background:var(--card);border-bottom:1px solid var(--bd);overflow-x:auto}
-nav button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--tx);padding:15px 16px;font:inherit;font-weight:500;white-space:nowrap;cursor:pointer}
-nav button.on{border-color:var(--ac);color:var(--ac);font-weight:700}
-button,.btn{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:9px 18px;cursor:pointer;font:inherit;font-weight:600}
-button.g{background:transparent;border:1px solid var(--bd);color:var(--tx);font-weight:500}
-main{padding:22px 24px;max-width:1200px;margin:auto}h2{font-size:26px;margin:18px 0}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:16px}.card h3{margin:14px 0 8px}.card h3:first-child{margin-top:0}
-.banner{display:flex;align-items:center;gap:18px;max-width:640px;padding:20px 24px;border:1.5px solid #fdba74;border-radius:14px;background:linear-gradient(135deg,#ffedd5,#fed7aa);color:#0f172a;cursor:pointer;box-shadow:0 4px 14px #f9731622}
-html[data-mode=dark] .banner{background:#f9731626;color:var(--tx)}.banner h3{margin:0 0 4px;font-size:20px}.banner p{margin:0;opacity:.8}
-.bi{width:56px;height:56px;border-radius:12px;background:var(--ac);color:#fff;display:grid;place-items:center;font-size:30px;flex:none}
-input,select,textarea{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:10px;font:inherit;width:100%}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);border-color:transparent}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}label{font-size:12px;color:var(--mu);display:block;margin:4px 0 3px}
-.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--mu);white-space:nowrap}th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--bd);font-size:14px}
-.stat{text-align:left;margin:0}.stat small{color:var(--mu);font-size:12px;text-transform:uppercase;letter-spacing:.5px}.stat b{display:block;font-size:32px;color:var(--ac);margin:4px 0}.stat span{color:var(--mu);font-size:13px}
-.msg{padding:12px 14px;border-radius:12px;margin:8px 0;white-space:pre-wrap}.u{background:var(--bg)}.a{background:#f9731618;border:1px solid #f9731640}
-img.th{max-width:150px;border-radius:10px}.c{text-align:center;margin-top:12vh}.c h1{font-size:36px}pre{white-space:pre-wrap;font-size:12px}summary{cursor:pointer;font-weight:600}
-.pb{height:170px;background:linear-gradient(135deg,#f97316,#fdba74) center/cover}.pav{width:84px;height:84px;border-radius:50%;border:4px solid var(--card);margin-top:-42px;background:var(--bg);object-fit:cover}.mb{height:60px;background:center/cover}
-.chat{display:grid;grid-template-columns:280px 1fr;gap:16px}.ci{padding:10px;border-radius:10px;cursor:pointer;margin-bottom:4px}.ci.on,.ci:hover{background:var(--bg)}.ci small{display:block;color:var(--ac)}.ms{flex:1;overflow-y:auto;margin:10px 0;display:flex;flex-direction:column;gap:6px}.bm{max-width:75%;padding:8px 12px;border-radius:12px;background:var(--bg)}.bm.me{align-self:flex-end;background:#f9731626}.bm small{color:var(--mu);font-size:11px}
-#dock{position:fixed;right:16px;bottom:16px;width:min(560px,calc(100vw - 32px));z-index:30;box-shadow:0 12px 40px #0005;max-height:80vh;overflow:auto;margin:0}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}.tile{position:relative;background:#000;border-radius:10px;overflow:hidden;min-height:90px}.tile video{width:100%;display:block;max-height:240px;background:#000}.tile span{position:absolute;left:8px;top:6px;color:#fff;font-size:12px;background:#0008;padding:2px 6px;border-radius:6px}.tile button{position:absolute;right:6px;bottom:6px;padding:4px 8px;font-size:12px}.ctl{display:flex;gap:6px;flex-wrap:wrap}.ctl button{padding:7px 10px;font-size:13px}
-@media(max-width:800px){.chat{grid-template-columns:1fr}}
-</style></head><body>
-<header><div class="brand"><span class="logo">G</span>Ghosting Scouting<span class="pill">BETA</span></div><div class="um" id="um"></div></header>
-<nav id="nav"></nav><main id="main"></main>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="config.js"></script>
-<script>
-const $=s=>document.querySelector(s),M=$('#main');
-const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-firebase.initializeApp(firebaseConfig);
-let chatSub=null,CUR={type:'group'},ME={},DMS=[],PEERS={},watchSubs={},CALL=null;const auth=firebase.auth(),db=firebase.firestore();
-let U,T,TD,ROLE,subs=[],D={matches:[],pits:[],docs:[],registry:[],robots:[],members:[],requests:[]},tab='painel',chat=[];
-const ls=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},ss=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-/* ---------- tema ---------- */
-function applyTheme(){const t=ls('theme',{});const r=document.documentElement;r.dataset.mode=t.mode||'light';['bg','card','tx','ac','font'].forEach(k=>t[k]?r.style.setProperty('--'+k,t[k]):r.style.removeProperty('--'+k))}applyTheme();
-/* ---------- auth ---------- */
-const login=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>alert(e.message));
-const rulesBtn=`<button class="g" onclick="showRules()">Regras do Firebase</button>`;
-async function showRules(){let t='';try{t=await (await fetch('firestore.rules')).text()}catch{t='Abra pelo GitHub Pages para ver as regras (ou use o arquivo firestore.rules).'}
- M.innerHTML=`<div class="card"><h3>Regras do Firestore</h3><button onclick="copyR()"> Copiar tudo</button> <button class="g" onclick="location.reload()">Voltar</button>
- <textarea id="rt" rows="22" readonly onclick="this.select()">${esc(t)}</textarea></div>`}
-function copyR(){const t=$('#rt');t.select();navigator.clipboard.writeText(t.value).then(()=>alert('Copiado!'))}
-auth.onAuthStateChanged(async u=>{U=u;subs.forEach(f=>f());subs=[];watchSubs={};PEERS={};DMS=[];if(CALL)leaveCall();userMenu();
- if(!u){$('#nav').innerHTML='';M.innerHTML=`<div class="c"><h1> Ghosting Scouting</h1><p>Equipe brainMachine 17728</p><button onclick="login()">Entrar com Google</button> ${rulesBtn}</div>`;return}
- const us=await db.doc('users/'+u.uid).get();T=us.exists?us.data().teamId:null;
- if(!T)return noTeam();
- const m=await db.doc(`teams/${T}/members/${u.uid}`).get();
- if(m.exists)return enter(m.data().role);
- const r=await db.doc(`teams/${T}/requests/${u.uid}`).get();
- if(r.exists){M.innerHTML=`<div class="c"><h2> Aguardando aprovação</h2><p>Peça ao admin da equipe para aprovar seu acesso.</p><button class="g" onclick="leave()">Cancelar pedido</button></div>`;
-  subs.push(db.doc(`teams/${T}/members/${u.uid}`).onSnapshot(s=>s.exists&&location.reload()));return}
- noTeam()});
-async function leave(){await db.doc(`teams/${T}/requests/${U.uid}`).delete().catch(()=>{});await db.doc('users/'+U.uid).delete();location.reload()}
-function noTeam(){M.innerHTML=`<div class="grid"><div class="card"><h3>Criar equipe</h3><label>Nome</label><input id="tn" value="brainMachine"><label>Número</label><input id="tnum" value="17728"><br><br><button onclick="createTeam()">Criar (você será admin)</button></div>
- <div class="card"><h3>Entrar em uma equipe</h3><label>ID da equipe (o admin vê na aba Equipe)</label><input id="tid"><br><br><button onclick="joinTeam()">Pedir permissão</button></div></div>`}
-async function createTeam(){const ref=db.collection('teams').doc();
- await ref.set({name:$('#tn').value,number:$('#tnum').value,ownerId:U.uid,ts:Date.now()});
- await ref.collection('members').doc(U.uid).set({role:'admin',name:U.displayName,email:U.email});
- await db.doc('users/'+U.uid).set({teamId:ref.id});location.reload()}
-async function joinTeam(){const id=$('#tid').value.trim();const t=await db.doc('teams/'+id).get().catch(()=>null);
- if(!t||!t.exists)return alert('Equipe não encontrada');
- await db.doc(`teams/${id}/requests/${U.uid}`).set({name:U.displayName,email:U.email,ts:Date.now()});
- await db.doc('users/'+U.uid).set({teamId:id});location.reload()}
-/* ---------- app ---------- */
-async function enter(role){ROLE=role;TD=(await db.doc('teams/'+T).get()).data();
- ['matches','pits','docs','registry','robots'].forEach(c=>subs.push(db.collection(`teams/${T}/${c}`).orderBy('ts','desc').onSnapshot(s=>{D[c]=s.docs.map(d=>({id:d.id,...d.data()}));if(['painel','scout','pit','times','robos','analise','docs'].includes(tab))render(true)})));
- subs.push(db.collection(`teams/${T}/members`).onSnapshot(s=>{D.members=s.docs.map(d=>({id:d.id,...d.data()}));(tab==='equipe'||tab==='perfil')&&render(true);userMenu()}));
- if(role==='admin')subs.push(db.collection(`teams/${T}/requests`).onSnapshot(s=>{D.requests=s.docs.map(d=>({id:d.id,...d.data()}));tab==='equipe'&&render(true)}));
- const tabs=[['painel','Painel'],['scout','Partidas'],['pit','Pit'],['times','Times'],['robos','Robôs'],['analise','Análise'],['ia','IA'],['docs','Biblioteca'],['chat','Chat'],['equipe','Equipe'],['tema','Tema']];
- $('#nav').innerHTML=tabs.map(t=>`<button data-t="${t[0]}" onclick="tab='${t[0]}';render()">${t[1]}</button>`).join('');userMenu();initChat();render()}
-function render(soft){if(tab!=='chat'&&chatSub){chatSub();chatSub=null}if(soft&&tab==='chat')return;if(soft&&['ia','tema'].includes(tab))return;if(soft&&document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
- document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));V[tab]()}
-const num=id=>+($('#'+id).value)||0;
-const nm=t=>(D.registry.find(x=>String(x.number)===String(t))||{}).name||'';
-const dl=()=>`<datalist id="dl_t">${D.registry.map(t=>`<option value="${esc(t.number)}" label="${esc(t.name)} - ${esc(t.rel)}"></option>`).join('')}</datalist>`;
-const rate=(id,l)=>`<div><label>${l}</label><select id="${id}">${[1,2,3,4,5].map(n=>`<option ${n==3?'selected':''}>${n}</option>`).join('')}</select></div>`;
-const opt=a=>a.map(x=>`<option>${x}</option>`).join('');
-const V={
-painel(){const nt=new Set(D.matches.map(x=>x.team)).size;
- M.innerHTML=`<div class="banner" onclick="tab='scout';render()"><span class="bi">+</span><div><h3>Comece o reconhecimento</h3><p>Acompanhe e analise o desempenho das equipes durante as partidas.</p></div></div>
- <h2>Visão geral da equipe</h2><div class="grid"><div class="card stat"><small>Partidas</small><b>${D.matches.length}</b></div><div class="card stat"><small>Times</small><b>${nt}</b></div><div class="card stat"><small>Pit scouts</small><b>${D.pits.length}</b></div><div class="card stat"><small>Membros</small><b>${D.members.length}</b></div></div>
- <div class="card tw"><h3>Últimas partidas</h3><table><tr><th>Time</th><th>Partida</th><th>Resultado</th><th>Pontos</th><th>Por</th></tr>${D.matches.slice(0,8).map(m=>`<tr><td>${esc(m.team)}</td><td>${m.m||''}</td><td>${esc(m.result||'')}</td><td>${(m.auto||0)+(m.tele||0)+(m.end||0)}</td><td>${esc(m.by)}</td></tr>`).join('')}</table></div>`},
-scout(){const sel=(id,l,a)=>`<div><label>${l}</label><select id="${id}">${opt(a)}</select></div>`,inp=(id,l,v='0',t='number',li='')=>`<div><label>${l}</label><input id="${id}" type="${t}" value="${v}" ${t==='number'?'min="0"':''} ${li?`list="${li}"`:''}></div>`;
- M.innerHTML=`<h2>Partidas</h2>${dl()}<div class="card"><h3>Partida</h3><div class="grid">${inp('f_team','Time # (escolha um time salvo ou digite)','','text','dl_t')}${inp('f_m','Partida #','')}${inp('f_p','Time parceiro (aliança)','','text','dl_t')}${sel('f_res','Resultado da partida',['Vitória','Derrota','Empate'])}</div>
- <h3>Pontuação</h3><div class="grid">${inp('f_a','Pontos autônomo')}${inp('f_t','Pontos TeleOp')}${inp('f_e','Pontos endgame')}${inp('f_c','Ciclos')}</div>
- <h3>Jogo</h3><div class="grid">${inp('f_dr','Vezes que derrubou célula')}${sel('f_fl','Coleta dentro da flor',['Sim','Não'])}<div><label>Elementos que atira</label><div id="f_sh"><label style="display:flex;gap:8px;align-items:center;color:var(--tx);font-size:14px;margin:6px 0"><input type="checkbox" value="Pólen" style="width:auto">Pólen</label><label style="display:flex;gap:8px;align-items:center;color:var(--tx);font-size:14px;margin:6px 0"><input type="checkbox" value="Néctar" style="width:auto">Néctar</label></div></div>${sel('f_au','Possui autônomo',['Sim','Parcial','Não'])}${sel('f_br','Robô quebrou',['Não','Sim'])}</div>
- <h3>Eficiência</h3><div class="grid">${inp('f_ca','Tentativas de coleta')}${inp('f_co','Coletas bem-sucedidas')}${inp('f_ta','Tiros tentados')}${inp('f_th','Tiros certos')}${rate('f_pl','Habilidade dos pilotos (1-5)')}${rate('f_r','Confiabilidade (1-5)')}</div>
- <label>Observações</label><textarea id="f_n" rows="3"></textarea><br><button onclick="saveMatch()">Salvar partida</button></div>
- <div class="card tw"><table><tr><th>Time</th><th>Partida</th><th>Resultado</th><th>Pontos</th><th>Derrub.</th><th>Quebrou</th><th>Obs</th><th>Por</th><th></th></tr>${D.matches.map(m=>`<tr><td>${esc(m.team)}</td><td>${m.m||''}</td><td>${esc(m.result||'')}</td><td>${(m.auto||0)+(m.tele||0)+(m.end||0)}</td><td>${m.drops||0}</td><td>${m.broke||'Não'}</td><td>${esc(m.notes)}</td><td>${esc(m.by)}</td><td><button class="g" onclick="del('matches','${m.id}')">✕</button></td></tr>`).join('')}</table></div>`},
-pit(){const sel=(id,l,a)=>`<div><label>${l}</label><select id="${id}">${opt(a)}</select></div>`;
- M.innerHTML=`<h2>Pit scouting</h2>${dl()}<div class="card"><div class="grid"><div><label>Time #</label><input id="p_team" list="dl_t"></div><div><label>Nome</label><input id="p_name"></div>
- ${sel('p_base','Tipo de base',['Mecanum','Tração 4x4','Swerve','Tank','Outra'])}${sel('p_sh','Tipo de shooter',['Flywheel único','Flywheel duplo','Turret','Hood ajustável','Outro','Não possui'])}${sel('p_rt','Tipo de robô',['Atirador','Coletor','Híbrido','Defesa'])}<div><label>Linguagem</label><input id="p_lang"></div></div>
- <label>Mecanismos / capacidades</label><textarea id="p_mech" rows="2"></textarea><label>Foto do robô</label><input type="file" id="p_img" accept="image/*"><br><br><button onclick="savePit()">Salvar</button></div>
- ${D.pits.map(p=>`<div class="card"><b>${esc(p.team)} - ${esc(p.name)}</b> <button class="g" onclick="del('pits','${p.id}')">✕</button><br>Base: ${esc(p.base||p.dt||'-')} | Shooter: ${esc(p.shooter||'-')} | Tipo: ${esc(p.rtype||'-')} | ${esc(p.lang)}<br>${esc(p.mech)}<br>${p.img?`<img class="th" src="${p.img}">`:''}</div>`).join('')}`},
-times(){M.innerHTML=`<h2>Times</h2><div class="card"><h3>Cadastrar time</h3><p style="color:var(--mu);margin-top:0">Times salvos aparecem para escolher nas Partidas, no Pit e nos Robôs.</p><div class="grid"><div><label>Número</label><input id="r_n"></div><div><label>Nome</label><input id="r_name"></div><div><label>Relação</label><select id="r_rel">${opt(['Amistosa','Adversária','Neutra'])}</select></div></div><br><button onclick="saveTeam()">Salvar time</button></div>
- <div class="card tw"><table><tr><th>Número</th><th>Nome</th><th>Relação</th><th>Partidas</th><th></th></tr>${[...D.registry].sort((a,b)=>String(a.number).localeCompare(String(b.number),undefined,{numeric:true})).map(t=>`<tr><td><b>${esc(t.number)}</b></td><td>${esc(t.name)}</td><td>${esc(t.rel)}</td><td>${D.matches.filter(m=>String(m.team)===String(t.number)).length}</td><td><button class="g" onclick="del('registry','${t.id}')">Excluir</button></td></tr>`).join('')}</table></div>`},
-robos(){M.innerHTML=`<h2>Robôs</h2>${dl()}<div class="card"><h3>Cadastrar robô</h3><div class="grid"><div><label>Nome do robô</label><input id="b_name"></div><div><label>Equipe (número)</label><input id="b_team" list="dl_t"></div></div><label>Observações</label><input id="b_n"><label>Foto do robô</label><input type="file" id="b_img" accept="image/*"><br><br><button onclick="saveRobot()">Salvar robô</button></div>
- <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">${D.robots.map(r=>`<div class="card" style="padding:0;overflow:hidden">${r.img?`<img src="${r.img}" style="width:100%;height:190px;object-fit:cover;display:block">`:`<div style="height:190px;background:var(--bg)"></div>`}<div style="padding:14px"><b>${esc(r.name)}</b><br><small style="color:var(--mu)">Equipe ${esc(r.team)} ${esc(nm(r.team))}</small><p>${esc(r.notes||'')}</p><button class="g" onclick="del('robots','${r.id}')">Excluir</button></div></div>`).join('')}</div>`},
-analise(){const m={};D.matches.forEach(x=>{const a=m[x.team]||(m[x.team]={n:0,pts:0,dr:0,fl:0,au:0,br:0,ca:0,co:0,ta:0,th:0,tele:0,cy:0,pl:0,w:0,l:0,e:0});
- a.n++;a.pts+=(x.auto||0)+(x.tele||0)+(x.end||0);a.dr+=x.drops||0;a.fl+=x.flower==='Sim'?1:0;a.au+=x.hasAuto==='Sim'?1:0;a.br+=x.broke==='Sim'?1:0;a.ca+=x.collAtt||0;a.co+=x.coll||0;a.ta+=x.shotAtt||0;a.th+=x.shotHit||0;a.tele+=x.tele||0;a.cy+=x.cycles||0;a.pl+=x.driver||0;
- if(x.result==='Vitória')a.w++;else if(x.result==='Derrota')a.l++;else if(x.result==='Empate')a.e++});
- const p=(a,b)=>b?Math.round(100*a/b)+'%':'-',f=(a,n)=>n?(a/n).toFixed(1):'-',pit=t=>D.pits.find(x=>x.team==t)||{};
- const rows=Object.entries(m).map(([k,a])=>({k,a})).sort((x,y)=>y.a.pts/y.a.n-x.a.pts/x.a.n),tot=D.matches.length,sum=rows.reduce((s,r)=>s+r.a.pts,0);
- M.innerHTML=`<h2>Análise geral</h2><div class="grid"><div class="card stat"><small>Média geral de pontos</small><b>${f(sum,tot)}</b><span>${tot} partidas</span></div>${rows.slice(0,3).map((r,i)=>`<div class="card stat"><small>Top ${i+1}</small><b>${esc(r.k)}</b><span>${f(r.a.pts,r.a.n)} pts médios</span></div>`).join('')}</div>
- <div class="card tw"><h3>Ranking e eficiência por time</h3><table><tr><th>#</th><th>Time</th><th>Partidas</th><th>Média pts</th><th>Derrub./jogo</th><th>Flor</th><th>Autônomo</th><th>Quebras</th><th>Efic. coleta</th><th>Efic. tiro (pts/ciclo)</th><th>Acertos</th><th>Pilotos</th><th>V-D-E</th><th>Base</th><th>Shooter</th><th>Tipo</th></tr>
- ${rows.map((r,i)=>{const a=r.a,q=pit(r.k);return `<tr><td>${i+1}</td><td><b>${esc(r.k)}</b> ${esc(nm(r.k))}</td><td>${a.n}</td><td>${f(a.pts,a.n)}</td><td>${f(a.dr,a.n)}</td><td>${p(a.fl,a.n)}</td><td>${p(a.au,a.n)}</td><td>${p(a.br,a.n)}</td><td>${p(a.co,a.ca)}</td><td>${f(a.tele,a.cy)}</td><td>${p(a.th,a.ta)}</td><td>${f(a.pl,a.n)}</td><td>${a.w}-${a.l}-${a.e}</td><td>${esc(q.base||'-')}</td><td>${esc(q.shooter||'-')}</td><td>${esc(q.rtype||'-')}</td></tr>`}).join('')}</table></div>`},
-ia(){const a=ls('ai',{base:'https://integrate.api.nvidia.com/v1',model:'meta/llama-3.1-70b-instruct',key:'',fk:'',fr:'',vis:false});
- M.innerHTML=`<div class="card"><details><summary> Configurar IA (salvo só neste navegador)</summary><div class="grid">
- <div><label>Provedor</label><select onchange="preset(this.value)"><option value="">Escolher...</option><option value="https://integrate.api.nvidia.com/v1|meta/llama-3.1-70b-instruct">NVIDIA</option><option value="https://openrouter.ai/api/v1|meta-llama/llama-3.1-70b-instruct">OpenRouter</option><option value="https://api.openai.com/v1|gpt-4o-mini">OpenAI</option></select></div>
- <div><label>Base URL (compatível OpenAI)</label><input id="a_b" value="${esc(a.base)}"></div><div><label>Modelo</label><input id="a_m" value="${esc(a.model)}"></div>
- <div><label>API key</label><input id="a_k" type="password" value="${esc(a.key)}"></div><div><label>Fish Audio key (voz)</label><input id="a_fk" type="password" value="${esc(a.fk)}"></div>
- <div><label>Fish voice reference_id</label><input id="a_fr" value="${esc(a.fr)}"></div></div>
- <label><input type="checkbox" id="a_v" style="width:auto" ${a.vis?'checked':''}> Modelo com visão (envia até 3 fotos da Biblioteca)</label><button onclick="saveAI()">Salvar</button></details></div>
- <div class="card" id="chat">${chat.map(chatHtml).join('')}</div><div class="card"><textarea id="q" rows="2" placeholder="Pergunte sobre regras, estratégia, quem escolher na aliança..."></textarea><br><button onclick="ask()">Enviar</button></div>`},
-docs(){M.innerHTML=`<div class="card"><h3>Biblioteca da IA</h3><p>Envie PDFs, .txt/.md ou imagens. A IA consulta tudo isto + os dados de scouting.</p>
- <input type="file" id="d_f" accept=".pdf,.txt,.md,image/*" multiple><br><br><button onclick="upDocs()">Enviar arquivos</button> <span id="d_s"></span><hr>
- <label>Ou cole o texto das regras</label><input id="d_pn" placeholder="Título"><textarea id="d_pt" rows="4"></textarea><br><button onclick="pasteDoc()">Salvar texto</button></div>
- <div class="card">${D.docs.map(d=>`<div>${d.kind==='img'?'[imagem]':'[texto]'} ${esc(d.name)} <button class="g" onclick="del('docs','${d.id}')">✕</button></div>`).join('')||'Nada ainda.'}</div>`},
-equipe(){M.innerHTML=`<div class="card"><h3>${esc(TD.name)} #${esc(TD.number)}</h3>ID para convidar: <b>${T}</b> <button onclick="navigator.clipboard.writeText('${T}')">Copiar</button>
- <p>${rulesBtn}</p></div>${ROLE==='admin'?`<div class="card"><h3>Pedidos de entrada</h3>${D.requests.map(r=>`<div>${esc(r.name)} (${esc(r.email)}) <button onclick="approve('${r.id}')">Aprovar</button> <button class="g" onclick="reject('${r.id}')">Recusar</button></div>`).join('')||'Nenhum pedido.'}</div>`:''}
- <div class="card"><h3>Membros</h3>${D.members.map(m=>`<div>${esc(m.name)} — ${m.role} ${ROLE==='admin'&&m.id!==U.uid?`<button class="g" onclick="expel('${m.id}')">Expulsar</button>`:''}</div>`).join('')}</div><div class="card"><h3>Sua participação</h3><button class="g" onclick="leaveTeam()">Sair da equipe</button>${ROLE==='admin'?` <button onclick="deleteTeam()" style="background:#dc2626">Excluir equipe</button>`:''}</div>`},
-perfil(){const me=D.members.find(x=>x.id===U.uid)||{};
- M.innerHTML=`<h2>Perfil</h2><div class="card" style="padding:0;overflow:hidden"><div class="pb" style="${me.banner?`background-image:url('${me.banner}')`:''}"></div><div style="padding:0 20px 20px"><img class="pav" src="${esc(U.photoURL||'')}" referrerpolicy="no-referrer"><h2 style="margin:8px 0 0">${esc(me.name||U.displayName)}</h2><small style="color:var(--mu)">${esc(U.email)} | ${me.role==='admin'?'Admin':'Membro'} | ${esc(TD.name)} #${esc(TD.number)}</small><p>${esc(me.bio||'')}</p></div></div>
- <div class="card"><h3>Editar perfil</h3><label>Nome de exibição</label><input id="pf_n" value="${esc(me.name||U.displayName)}"><label>Sobre mim</label><textarea id="pf_b" rows="3" maxlength="300">${esc(me.bio||'')}</textarea><label>Banner (imagem)</label><input type="file" id="pf_i" accept="image/*"><br><br><button onclick="saveProfile()">Salvar perfil</button> ${me.banner?`<button class="g" onclick="rmBanner()">Remover banner</button>`:''}</div>`},
-tema(){const t=ls('theme',{});const c=(k,l,d)=>`<div><label>${l}</label><input type="color" id="t_${k}" value="${t[k]||d}"></div>`;
- M.innerHTML=`<div class="card"><h3>Personalizar</h3><div class="grid">${c('bg','Fundo','#f8fafc')}${c('card','Cartões','#ffffff')}${c('tx','Texto','#0f172a')}${c('ac','Destaque','#f97316')}
- <div><label>Fonte</label><select id="t_font">${['system-ui,sans-serif','Georgia,serif','"Courier New",monospace','Verdana,sans-serif'].map(f=>`<option ${t.font===f?'selected':''}>${esc(f)}</option>`).join('')}</select></div></div><br>
- <button onclick="saveTheme()">Aplicar</button> <button class="g" onclick="resetTheme()">Resetar tema</button></div>`}};
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#cde5ff">
+<title>Concord</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+<section id="auth">
+  <div class="glass">
+    <h1>Concord</h1>
+    <p class="mut">Converse, poste status e ligue para seus amigos.</p>
+    <div class="tabs"><button id="tabIn" class="on">Entrar</button><button id="tabUp">Criar conta</button></div>
+    <form id="fIn">
+      <input id="inId" placeholder="ID da conta" maxlength="8" autocomplete="username" required>
+      <input id="inPw" type="password" placeholder="Senha" autocomplete="current-password" required>
+      <button class="btn">Entrar</button>
+    </form>
+    <form id="fUp" hidden>
+      <input id="upName" placeholder="Seu nome" maxlength="20" required>
+      <input id="upToken" placeholder="Token de acesso" inputmode="numeric" required>
+      <input id="upPw" type="password" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password" required>
+      <button class="btn">Criar conta</button>
+    </form>
+    <p id="err"></p>
+    <button id="bTheme0" class="ghost">Alternar tema claro/escuro</button>
+  </div>
+</section>
 
-function userMenu(){const e=$('#um');if(!U){e.innerHTML='';return}const me=D.members.find(x=>x.id===U.uid)||{};
- e.innerHTML=`<div class="uc" onclick="$('#menu').hidden=!$('#menu').hidden"><span>${TD?`<b>${esc(TD.name)}</b><small>#${esc(TD.number)}</small>`:`<b>${esc(U.displayName)}</b>`}</span>${U.photoURL?`<img src="${esc(U.photoURL)}" referrerpolicy="no-referrer">`:''}</div>
- <div class="menu" id="menu" hidden>${me.banner?`<div class="mb" style="background-image:url('${me.banner}')"></div>`:''}<div class="mh"><b>${esc(U.displayName)}</b><small>${esc(U.email)}</small></div>${TD?`<a onclick="go('perfil')">Perfil</a><a onclick="go('equipe')">Minha equipe</a><a onclick="go('tema')">Personalizar tema</a>`:''}<a onclick="toggleDark()">Modo escuro</a><a onclick="resetTheme()">Resetar tema</a><a onclick="showRules()">Regras do Firebase</a><a onclick="auth.signOut()">Sair</a></div>`}
-const go=t=>{tab=t;$('#menu').hidden=true;render()};
-function toggleDark(){const t=ls('theme',{});t.mode=t.mode==='dark'?'light':'dark';ss('theme',t);applyTheme();$('#menu').hidden=true}
-/* ---------- ações ---------- */
-async function saveProfile(){const f=$('#pf_i').files[0],d={name:$('#pf_n').value.trim()||U.displayName,bio:$('#pf_b').value};if(f)d.banner=await shrink(f,1200);
- await db.doc(`teams/${T}/members/${U.uid}`).update(d);alert('Perfil salvo')}
-const rmBanner=()=>db.doc(`teams/${T}/members/${U.uid}`).update({banner:''});
-async function saveTeam(){const n=$('#r_n').value.trim();if(!n)return alert('Informe o número');if(D.registry.some(x=>String(x.number)===n))return alert('Esse time já está salvo');
- await db.collection(`teams/${T}/registry`).add({number:n,name:$('#r_name').value.trim(),rel:$('#r_rel').value,ts:Date.now()});$('#r_n').value='';$('#r_name').value=''}
-async function saveRobot(){const f=$('#b_img').files[0],n=$('#b_name').value.trim();if(!n)return alert('Informe o nome do robô');
- await db.collection(`teams/${T}/robots`).add({name:n,team:$('#b_team').value.trim(),notes:$('#b_n').value,img:f?await shrink(f,800):'',ts:Date.now()});alert('Robô salvo')}
-const expel=id=>confirm('Expulsar este membro da equipe?')&&db.doc(`teams/${T}/members/${id}`).delete();
-function resetTheme(){localStorage.removeItem('theme');applyTheme();const m=$('#menu');if(m)m.hidden=true;render()}
-async function leaveTeam(){if(TD.ownerId===U.uid)return alert('Você criou a equipe. Para sair, exclua a equipe.');
- if(!confirm('Sair da equipe?'))return;await db.doc(`teams/${T}/members/${U.uid}`).delete();await db.doc('users/'+U.uid).delete();location.reload()}
-async function deleteTeam(){if(ROLE!=='admin')return;if(prompt('Isso apaga a equipe e TODOS os dados. Digite EXCLUIR para confirmar:')!=='EXCLUIR')return;
- for(const c of ['matches','pits','docs','registry','robots','chat','requests'])for(const d of (await db.collection(`teams/${T}/${c}`).get()).docs)await d.ref.delete();
- for(const d of (await db.collection(`teams/${T}/members`).get()).docs)if(d.id!==U.uid)await d.ref.delete();
- await db.doc('teams/'+T).delete();await db.doc(`teams/${T}/members/${U.uid}`).delete();await db.doc('users/'+U.uid).delete();location.reload()}
-const del=(c,id)=>confirm('Apagar?')&&db.doc(`teams/${T}/${c}/${id}`).delete();
-async function saveMatch(){const team=$('#f_team').value.trim();if(!team)return alert('Informe o time');const v=id=>$('#'+id).value;
- await db.collection(`teams/${T}/matches`).add({team,m:num('f_m'),partner:v('f_p'),result:v('f_res'),auto:num('f_a'),tele:num('f_t'),end:num('f_e'),cycles:num('f_c'),drops:num('f_dr'),flower:v('f_fl'),shoots:[...document.querySelectorAll('#f_sh input:checked')].map(i=>i.value).join(', '),hasAuto:v('f_au'),broke:v('f_br'),collAtt:num('f_ca'),coll:num('f_co'),shotAtt:num('f_ta'),shotHit:num('f_th'),driver:num('f_pl'),rel:num('f_r'),notes:v('f_n'),by:U.displayName,ts:Date.now()});alert('Partida salva')}
-const shrink=(f,w=700)=>new Promise(ok=>{const i=new Image();i.onload=()=>{const s=Math.min(1,w/i.width),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.7))};i.src=URL.createObjectURL(f)});
-async function savePit(){const f=$('#p_img').files[0],v=id=>$('#'+id).value;await db.collection(`teams/${T}/pits`).add({team:v('p_team'),name:v('p_name'),base:v('p_base'),shooter:v('p_sh'),rtype:v('p_rt'),lang:v('p_lang'),mech:v('p_mech'),img:f?await shrink(f):'',ts:Date.now()});alert('Pit salvo')}
-async function addText(name,text){for(let i=0;i<text.length;i+=250000)await db.collection(`teams/${T}/docs`).add({name:name+(text.length>250000?` (parte ${i/250000+1})`:''),kind:'text',text:text.slice(i,i+250000),ts:Date.now()+i})}
-async function upDocs(){const fs=[...$('#d_f').files];for(const f of fs){$('#d_s').textContent='Processando '+f.name+'...';
-  if(f.type.startsWith('image/'))await db.collection(`teams/${T}/docs`).add({name:f.name,kind:'img',img:await shrink(f,900),ts:Date.now()});
-  else if(f.name.toLowerCase().endsWith('.pdf')){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-   const p=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let t='';for(let i=1;i<=p.numPages;i++){t+=`\n[pág ${i}] `+(await(await p.getPage(i)).getTextContent()).items.map(x=>x.str).join(' ')}await addText(f.name,t)}
-  else await addText(f.name,await f.text())}$('#d_s').textContent=' Pronto'}
-const pasteDoc=()=>addText($('#d_pn').value||'Regras',$('#d_pt').value).then(()=>$('#d_pt').value='');
-const approve=async id=>{const r=D.requests.find(x=>x.id===id);await db.doc(`teams/${T}/members/${id}`).set({role:'member',name:r.name,email:r.email});await db.doc(`teams/${T}/requests/${id}`).delete()};
-const reject=id=>db.doc(`teams/${T}/requests/${id}`).delete();
-function saveTheme(){ss('theme',{...ls('theme',{}),bg:$('#t_bg').value,card:$('#t_card').value,tx:$('#t_tx').value,ac:$('#t_ac').value,font:$('#t_font').value});applyTheme()}
-/* ---------- IA ---------- */
-function preset(v){if(!v)return;const[b,m]=v.split('|');$('#a_b').value=b;$('#a_m').value=m}
-function saveAI(){ss('ai',{base:$('#a_b').value.replace(/\/$/,''),model:$('#a_m').value,key:$('#a_k').value,fk:$('#a_fk').value,fr:$('#a_fr').value,vis:$('#a_v').checked});alert('Salvo')}
-const chatHtml=(m,i)=>`<div class="msg ${m.role==='user'?'u':'a'}">${esc(m.content)}${m.role!=='user'?` <button class="g" onclick="speak(${i})">Ouvir</button>`:''}</div>`;
-function context(){const sc=D.matches.slice(0,150).map(m=>`T${m.team} P${m.m} ${m.result||""} parceiro ${m.partner||""}: auto${m.auto} tele${m.tele} end${m.end} ciclos${m.cycles} derrubou${m.drops||0} flor:${m.flower||""} atira:${m.shoots||""} autonomo:${m.hasAuto||""} quebrou:${m.broke||""} coleta ${m.coll||0}/${m.collAtt||0} tiros ${m.shotHit||0}/${m.shotAtt||0} piloto${m.driver||""} "${m.notes}"`).join('\n');
- const pit=D.pits.map(p=>`T${p.team} ${p.name}: base ${p.base}, shooter ${p.shooter}, tipo ${p.rtype}, ${p.lang}, ${p.mech}`).join('\n');
- let docs='';for(const d of D.docs.filter(d=>d.kind==='text')){if(docs.length>90000)break;docs+=`\n### ${d.name}\n${d.text}`}
- return `Você é o assistente de scouting FTC da equipe ${TD.name} #${TD.number} (Ghosting Scouting). Responda em português, usando os dados abaixo e citando o documento quando usar regras.\n\n## PARTIDAS\n${sc}\n\n## PIT\n${pit}\n\n## TIMES CADASTRADOS\n${D.registry.map(t=>`T${t.number} ${t.name} (${t.rel})`).join('\n')}\n\n## ROBOS\n${D.robots.map(r=>`${r.name} (time ${r.team})`).join('\n')}\n\n## DOCUMENTOS${docs.slice(0,90000)}`}
-async function ask(){const a=ls('ai',{});if(!a.key)return alert('Configure a API key');const q=$('#q').value.trim();if(!q)return;$('#q').value='';
- chat.push({role:'user',content:q});render();const msgs=[{role:'system',content:context()},...chat.slice(-10)];
- if(a.vis){const im=D.docs.filter(d=>d.kind==='img').slice(0,3).map(d=>({type:'image_url',image_url:{url:d.img}}));if(im.length)msgs[msgs.length-1]={role:'user',content:[{type:'text',text:q},...im]}}
- try{const r=await fetch(a.base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+a.key},body:JSON.stringify({model:a.model,messages:msgs,max_tokens:1200})});
-  const j=await r.json();chat.push({role:'assistant',content:j.choices?.[0]?.message?.content||JSON.stringify(j)})}
- catch(e){chat.push({role:'assistant',content:'Erro: '+e.message+' (se for CORS, use um proxy ou OpenRouter)'})}render()}
-async function speak(i){const a=ls('ai',{});if(!a.fk)return alert('Configure a Fish Audio key');
- try{const r=await fetch('https://api.fish.audio/v1/tts',{method:'POST',headers:{Authorization:'Bearer '+a.fk,'Content-Type':'application/json'},body:JSON.stringify({text:chat[i].content.slice(0,1500),reference_id:a.fr||undefined,format:'mp3'})});
-  if(!r.ok)throw new Error(r.status);new Audio(URL.createObjectURL(await r.blob())).play()}catch(e){alert('Erro Fish Audio: '+e.message)}}
-/* ---------- CHAT E CHAMADAS ---------- */
-const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
-const roomG=()=>'t_'+T,roomD=id=>'d_'+id;
-const other=d=>{const k=d.members.find(x=>x!==U.uid);return (d.info&&d.info[k])||{name:'?'}};
-const act=r=>(PEERS[r]||[]).filter(p=>p.id!==U.uid&&Date.now()-(p.ts||0)<40000);
-function roomName(r){if(r===roomG())return 'Grupo da equipe';const d=DMS.find(x=>roomD(x.id)===r);return d?other(d).name:'Conversa'}
-async function initChat(){const pr=db.doc('profiles/'+U.uid),s=await pr.get();let d=s.exists?s.data():{};
- if(!d.uname)d.uname=(U.displayName||'user').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12)+Math.floor(100+Math.random()*900);
- d={...d,name:U.displayName,photo:U.photoURL||''};await pr.set(d,{merge:true});ME=d;
- subs.push(db.collection('dms').where('members','array-contains',U.uid).onSnapshot(q=>{DMS=q.docs.map(x=>({id:x.id,...x.data()}));DMS.forEach(x=>watch(roomD(x.id)));if(tab==='chat')drawList()}));
- watch(roomG());const iv=setInterval(ring,15000);subs.push(()=>clearInterval(iv))}
-function watch(r){if(watchSubs[r])return;watchSubs[r]=1;subs.push(db.collection(`rooms/${r}/peers`).onSnapshot(q=>{PEERS[r]=q.docs.map(d=>({id:d.id,...d.data()}));ring();if(tab==='chat')drawList()}))}
-function ring(){let b=$('#ring');if(!b){b=document.createElement('div');b.id='ring';b.className='card';b.style.cssText='position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:40;display:none;gap:10px;align-items:center;margin:0;flex-wrap:wrap;justify-content:center';document.body.appendChild(b)}
- const r=Object.keys(PEERS).find(k=>act(k).length&&(!CALL||CALL.room!==k));if(!r||!U){b.style.display='none';return}
- b.style.display='flex';b.innerHTML=`<span>Chamada em andamento: <b>${esc(roomName(r))}</b></span><button onclick="joinCall('${r}',false)">Entrar (áudio)</button><button class="g" onclick="joinCall('${r}',true)">Entrar com vídeo</button>`}
-V.chat=function(){M.innerHTML=`<h2>Chat</h2><div class="chat"><div class="card" id="cl"></div><div class="card" id="cm" style="display:flex;flex-direction:column;height:70vh"></div></div>`;openChat(CUR)};
-function drawList(){const e=$('#cl');if(!e||(document.activeElement&&document.activeElement.id==='ad'))return;
- const it=(on,k,t,sub)=>`<div class="ci ${on?'on':''}" onclick="${k}"><b>${t}</b>${sub?`<small>${sub}</small>`:''}</div>`;
- e.innerHTML=`<h3>Conversas</h3>${it(CUR.type==='group',"openChat({type:'group'})",'Grupo da equipe',act(roomG()).length?'chamada em andamento':'')}${DMS.map(d=>it(CUR.id===d.id,`openChat({type:'dm',id:'${d.id}'})`,esc(other(d).name),act(roomD(d.id)).length?'chamada em andamento':'')).join('')}
- <h3>Adicionar pessoa</h3><input id="ad" placeholder="@usuario ou ID"><br><br><button onclick="addPerson()">Adicionar</button>
- <h3>Seu usuário</h3><small>@${esc(ME.uname)}</small><br><small style="word-break:break-all;color:var(--mu)">ID: ${U.uid}</small><br><br><button class="g" onclick="navigator.clipboard.writeText('${U.uid}');alert('ID copiado')">Copiar ID</button>`}
-function openChat(c){CUR=c;if(chatSub){chatSub();chatSub=null}const e=$('#cm');if(!e)return;
- const dm=c.type==='dm'?DMS.find(x=>x.id===c.id):null;if(c.type==='dm'&&!dm){CUR={type:'group'};return openChat(CUR)}
- const room=dm?roomD(dm.id):roomG(),title=dm?other(dm).name:'Grupo da equipe',path=dm?`dms/${dm.id}/messages`:`teams/${T}/chat`;drawList();
- e.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><h3 style="margin:0;flex:1">${esc(title)}</h3><button class="g" onclick="joinCall('${room}',false)">Ligar</button><button onclick="joinCall('${room}',true)">Vídeo</button></div><div id="ms" class="ms"></div><div style="display:flex;gap:8px"><input id="mi" placeholder="Mensagem" onkeydown="if(event.key==='Enter')sendMsg()"><button onclick="sendMsg()">Enviar</button></div>`;
- chatSub=db.collection(path).orderBy('ts','desc').limit(100).onSnapshot(q=>{const ms=$('#ms');if(!ms)return;ms.innerHTML=q.docs.reverse().map(d=>{const m=d.data();return `<div class="bm ${m.uid===U.uid?'me':''}"><small>${esc(m.name)}</small><div>${esc(m.text)}</div></div>`}).join('');ms.scrollTop=ms.scrollHeight})}
-async function sendMsg(){const i=$('#mi'),t=i.value.trim();if(!t)return;i.value='';
- await db.collection(CUR.type==='dm'?`dms/${CUR.id}/messages`:`teams/${T}/chat`).add({text:t.slice(0,2000),uid:U.uid,name:U.displayName,ts:Date.now()})}
-async function addPerson(){const raw=$('#ad').value.trim();if(!raw)return;let p=null;
- if(!raw.startsWith('@')&&!raw.includes('/')){const s=await db.doc('profiles/'+raw).get().catch(()=>null);if(s&&s.exists)p={id:s.id,...s.data()}}
- if(!p){const q=await db.collection('profiles').where('uname','==',raw.replace(/^@/,'').toLowerCase()).limit(1).get();if(!q.empty)p={id:q.docs[0].id,...q.docs[0].data()}}
- if(!p)return alert('Pessoa não encontrada. Ela precisa ter entrado no site ao menos uma vez.');if(p.id===U.uid)return alert('Esse é você');
- const id=[U.uid,p.id].sort().join('_');
- await db.doc('dms/'+id).set({members:[U.uid,p.id].sort(),info:{[U.uid]:{name:U.displayName,photo:U.photoURL||''},[p.id]:{name:p.name,photo:p.photo||''}},ts:Date.now()},{merge:true});openChat({type:'dm',id})}
-/* chamadas WebRTC (malha), sinalização via Firestore */
-const send=(to,type,data)=>db.collection(`rooms/${CALL.room}/signals`).add({from:U.uid,to,type,data,ts:Date.now()});
-async function joinCall(room,video){if(CALL)return alert('Você já está em uma chamada');
- let st;try{st=await navigator.mediaDevices.getUserMedia({audio:true,video:!!video})}catch(e){return alert('Sem acesso ao microfone/câmera: '+e.message)}
- const sid=Math.random().toString(36).slice(2);
- CALL={room,sid,pcs:{},streams:{},pend:{},peerSid:{},names:{},muted:{},mic:st.getAudioTracks()[0],cam:st.getVideoTracks()[0]||null,screen:null,subs:[],key:''};drawDock();ring();
- const sig=db.collection(`rooms/${room}/signals`);for(const d of (await sig.where('to','==',U.uid).get()).docs)await d.ref.delete();
- CALL.subs.push(sig.where('to','==',U.uid).onSnapshot(q=>q.docChanges().forEach(c=>c.type==='added'&&onSig(c.doc))));
- const pr=db.doc(`rooms/${room}/peers/${U.uid}`),beat=()=>pr.set({name:U.displayName,sid,ts:Date.now()});await beat();CALL.hb=setInterval(beat,15000);
- CALL.subs.push(db.collection(`rooms/${room}/peers`).onSnapshot(q=>{if(!CALL||CALL.room!==room)return;const live=new Set();
-  q.docs.forEach(d=>{const p=d.data();if(d.id===U.uid||Date.now()-p.ts>40000)return;live.add(d.id);
-   if(CALL.peerSid[d.id]&&CALL.peerSid[d.id]!==p.sid)dropPeer(d.id);CALL.peerSid[d.id]=p.sid;CALL.names[d.id]=p.name;
-   if(!CALL.pcs[d.id]&&U.uid<d.id)connect(d.id)});
-  Object.keys(CALL.pcs).forEach(k=>!live.has(k)&&dropPeer(k));const key=[...live].sort().join();if(key!==CALL.key){CALL.key=key;drawDock()}}));
- window.addEventListener('beforeunload',leaveCall)}
-function mkPc(id){const pc=new RTCPeerConnection(ICE),ms=new MediaStream();CALL.streams[id]=ms;CALL.pend[id]=CALL.pend[id]||[];
- pc.ontrack=e=>{ms.addTrack(e.track);drawDock()};pc.onicecandidate=e=>e.candidate&&CALL&&send(id,'cand',JSON.stringify(e.candidate));CALL.pcs[id]=pc;return pc}
-async function connect(id){const pc=mkPc(id);CALL.mic&&pc.addTrack(CALL.mic,CALL.streams[id]);const tr=pc.addTransceiver('video',{direction:'sendrecv'});pc._vs=tr.sender;await tr.sender.replaceTrack(CALL.screen||CALL.cam||null);
- await pc.setLocalDescription(await pc.createOffer());send(id,'offer',JSON.stringify(pc.localDescription))}
-async function flush(id){const pc=CALL.pcs[id];for(const c of CALL.pend[id]||[])await pc.addIceCandidate(JSON.parse(c)).catch(()=>{});CALL.pend[id]=[]}
-async function onSig(d){const s=d.data();d.ref.delete();if(!CALL)return;const id=s.from;
- if(s.type==='offer'){dropPeer(id);const pc=mkPc(id);await pc.setRemoteDescription(JSON.parse(s.data));CALL.mic&&pc.addTrack(CALL.mic,CALL.streams[id]);
-  const vt=pc.getTransceivers().find(t=>t.receiver.track.kind==='video');if(vt){vt.direction='sendrecv';pc._vs=vt.sender;await vt.sender.replaceTrack(CALL.screen||CALL.cam||null)}
-  await flush(id);await pc.setLocalDescription(await pc.createAnswer());send(id,'answer',JSON.stringify(pc.localDescription))}
- else if(s.type==='answer'){const pc=CALL.pcs[id];if(pc){await pc.setRemoteDescription(JSON.parse(s.data));await flush(id)}}
- else{const pc=CALL.pcs[id];if(pc&&pc.remoteDescription)pc.addIceCandidate(JSON.parse(s.data)).catch(()=>{});else(CALL.pend[id]=CALL.pend[id]||[]).push(s.data)}}
-function dropPeer(id){const pc=CALL&&CALL.pcs[id];if(pc){pc.close();delete CALL.pcs[id];delete CALL.streams[id]}}
-async function leaveCall(){if(!CALL)return;const c=CALL;CALL=null;clearInterval(c.hb);c.subs.forEach(f=>f());Object.values(c.pcs).forEach(p=>p.close());[c.mic,c.cam,c.screen].forEach(t=>t&&t.stop());
- try{await db.doc(`rooms/${c.room}/peers/${U.uid}`).delete()}catch{}const d=$('#dock');if(d)d.remove();window.removeEventListener('beforeunload',leaveCall);ring()}
-const toggleMic=()=>{CALL.mic.enabled=!CALL.mic.enabled;drawDock()};
-async function toggleCam(){if(CALL.cam){CALL.cam.stop();CALL.cam=null}else{try{CALL.cam=(await navigator.mediaDevices.getUserMedia({video:true})).getVideoTracks()[0]}catch(e){return alert(e.message)}}setVid()}
-async function toggleScreen(){if(CALL.screen){CALL.screen.stop();CALL.screen=null}else{try{const s=await navigator.mediaDevices.getDisplayMedia({video:true});CALL.screen=s.getVideoTracks()[0];CALL.screen.onended=()=>{if(CALL&&CALL.screen){CALL.screen=null;setVid()}}}catch(e){return}}setVid()}
-function setVid(){const t=CALL.screen||CALL.cam||null;Object.values(CALL.pcs).forEach(p=>p._vs&&p._vs.replaceTrack(t));drawDock()}
-const muteOne=id=>{CALL.muted[id]=!CALL.muted[id];drawDock()};
-const muteAll=()=>{const ids=Object.keys(CALL.pcs),all=ids.every(k=>CALL.muted[k]);ids.forEach(k=>CALL.muted[k]=!all);drawDock()};
-function drawDock(){if(!CALL)return;let d=$('#dock');if(!d){d=document.createElement('div');d.id='dock';d.className='card';document.body.appendChild(d)}
- const ids=Object.keys(CALL.pcs),on=CALL.mic.enabled;
- d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><b style="flex:1">${esc(roomName(CALL.room))} (${ids.length+1} na chamada)</b><button class="g" onclick="$('#dtiles').hidden=!$('#dtiles').hidden">Ocultar</button></div>
- <div id="dtiles" class="tiles"><div class="tile"><video data-id="me" autoplay playsinline muted></video><span>Você</span></div>${ids.map(i=>`<div class="tile"><video data-id="${i}" autoplay playsinline></video><span>${esc(CALL.names[i]||'')}</span><button class="g" onclick="muteOne('${i}')">${CALL.muted[i]?'Ativar som':'Mutar'}</button></div>`).join('')}</div>
- <div class="ctl"><button class="g" onclick="toggleMic()">${on?'Mutar meu microfone':'Ativar meu microfone'}</button><button class="g" onclick="toggleCam()">${CALL.cam?'Desligar câmera':'Ligar câmera'}</button><button class="g" onclick="toggleScreen()">${CALL.screen?'Parar compartilhamento':'Compartilhar tela'}</button><button class="g" onclick="muteAll()">Mutar todos</button><button style="background:#dc2626" onclick="leaveCall()">Sair</button></div>`;
- d.querySelectorAll('video').forEach(v=>{const i=v.dataset.id;if(i==='me')v.srcObject=new MediaStream([CALL.screen||CALL.cam].filter(Boolean));else{v.srcObject=CALL.streams[i]||null;v.muted=!!CALL.muted[i]}})}
-</script></body></html>
+<section id="app" hidden>
+  <aside id="list">
+    <header><h1 id="ttl">Conversas</h1><button id="bAdd" class="round" data-i="plus" title="Adicionar"></button></header>
+    <label id="qwrap" class="search"><span data-i="search"></span><input id="q" placeholder="Buscar pessoas e grupos"></label>
+    <div id="page"></div>
+    <nav id="nav">
+      <button data-t="chats" class="on"><span data-i="chat"></span><span>Conversas</span></button>
+      <button data-t="status"><span data-i="status"></span><span>Status</span></button>
+      <button data-t="me"><span data-i="user"></span><span>Perfil</span></button>
+    </nav>
+  </aside>
+  <main id="chat">
+    <header>
+      <button id="bBack" class="act" data-i="back" title="Voltar"></button>
+      <div id="chHead" class="hd"><b>Concord</b></div>
+      <button id="bCall" class="act" data-i="phone" title="Ligação de voz" hidden></button>
+      <button id="bVid" class="act" data-i="video" title="Chamada de vídeo" hidden></button>
+      <button id="bMem" class="act" data-i="plus" title="Adicionar ao grupo" hidden></button>
+    </header>
+    <div id="msgs"><p class="empty">Escolha uma conversa para começar.</p></div>
+    <form id="fSend"><input id="txt" autocomplete="off" placeholder="Digite uma mensagem"><button class="send" data-i="send" title="Enviar"></button></form>
+  </main>
+</section>
+
+<div id="sv" hidden></div>
+<div id="cv" hidden></div>
+<div id="inc" hidden></div>
+<div id="modal" hidden><div class="box glass" id="box"></div></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
