@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signed() { return request.auth != null; }
+    function member(t) { return signed() && exists(/databases/$(database)/documents/teams/$(t)/members/$(request.auth.uid)); }
+    function admin(t) { return signed() && get(/databases/$(database)/documents/teams/$(t)/members/$(request.auth.uid)).data.role == 'admin'; }
+
+    match /users/{u} {
+      allow read, write: if signed() && request.auth.uid == u;
+    }
+    match /teams/{t} {
+      allow get: if signed();
+      allow create: if signed() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if admin(t);
+
+      match /members/{m} {
+        allow read: if signed() && (request.auth.uid == m || member(t));
+        allow create: if signed() && request.auth.uid == m
+                      && get(/databases/$(database)/documents/teams/$(t)).data.ownerId == request.auth.uid
+                      || admin(t);
+        allow update, delete: if admin(t) || (signed() && request.auth.uid == m);
+      }
+      match /requests/{r} {
+        allow create: if signed() && request.auth.uid == r;
+        allow read: if signed() && (request.auth.uid == r || admin(t));
+        allow delete: if admin(t) || (signed() && request.auth.uid == r);
+      }
+      match /{coll}/{doc} {
+        allow read, write: if member(t) && coll in ['matches','pits','docs'];
+      }
+    }
+  }
+}

@@ -2,21 +2,29 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ghosting Scouting</title>
 <style>
-:root{--bg:#0d0f1a;--card:#171a2b;--tx:#e8eaf6;--ac:#8b5cf6;--font:system-ui,sans-serif}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--font)}
-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--card);flex-wrap:wrap}
-header h1{font-size:18px;margin:0;flex:1}header h1 span{color:var(--ac)}
-nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px}
-button,.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font:inherit}
-button.g{background:transparent;border:1px solid var(--ac);color:var(--tx)}button.on{outline:2px solid var(--tx)}
-main{padding:16px;max-width:1000px;margin:auto}.card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px}
-input,select,textarea{background:var(--bg);color:var(--tx);border:1px solid #ffffff30;border-radius:8px;padding:8px;font:inherit;width:100%}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}label{font-size:12px;opacity:.8;display:block}
-table{width:100%;border-collapse:collapse}th,td{padding:6px;text-align:left;border-bottom:1px solid #ffffff20;font-size:14px}
-.msg{padding:10px;border-radius:10px;margin:6px 0;white-space:pre-wrap}.u{background:#ffffff15}.a{background:var(--ac)}
-img.th{max-width:120px;border-radius:8px}.c{text-align:center;margin-top:12vh}pre{white-space:pre-wrap;font-size:12px}
+:root{--bg:#120f0d;--card:#1e1814;--tx:#f6ede6;--ac:#ff6a1a;--ac2:#ffb02e;--font:system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 400px at 50% -100px,#ff6a1a26,transparent),var(--bg);color:var(--tx);font-family:var(--font);padding-bottom:84px;min-height:100vh}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:12px 18px;background:#120f0dcc;backdrop-filter:blur(10px);border-bottom:1px solid #ffffff14;flex-wrap:wrap}
+header h1{font-size:19px;margin:0;flex:1;font-weight:800;letter-spacing:-.3px}header h1 span{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header small{font-weight:500;font-size:11px}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;gap:2px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:#1a1411f2;backdrop-filter:blur(12px);border-top:1px solid #ffffff14;overflow-x:auto}
+nav button{flex:1;min-width:64px;background:transparent;border:0;color:#f6ede6aa;font-size:11px;padding:8px 4px;border-radius:12px;outline:0!important}
+nav button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#1a0e05;font-weight:700}
+button,.btn{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#1a0e05;font-weight:700;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;font:inherit;font-weight:700}
+button.g{background:transparent;border:1px solid #ffffff2a;color:var(--tx);font-weight:500}
+main{padding:18px;max-width:1000px;margin:auto}.card{background:var(--card);border:1px solid #ffffff12;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 8px 24px #0006}
+.card h3{margin-top:0}
+input,select,textarea{background:#120f0d;color:var(--tx);border:1px solid #ffffff22;border-radius:10px;padding:9px;font:inherit;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);border-color:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}label{font-size:12px;opacity:.75;display:block;margin:4px 0 2px}
+table{width:100%;border-collapse:collapse}th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;opacity:.6}th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #ffffff14;font-size:14px}
+.stat{text-align:center;margin:0}.stat small{opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.6px}.stat b{display:block;font-size:30px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}.stat span{opacity:.7;font-size:13px}
+.msg{padding:11px 13px;border-radius:14px;margin:8px 0;white-space:pre-wrap}.u{background:#ffffff14}.a{background:#ff6a1a2e;border:1px solid #ff6a1a55}
+img.th{max-width:140px;border-radius:12px}.c{text-align:center;margin-top:12vh}.c h1{font-size:34px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}pre{white-space:pre-wrap;font-size:12px}
+summary{cursor:pointer;font-weight:600}
+@media(min-width:800px){nav{position:static;background:transparent;border:0;padding:10px 18px;max-width:1000px;margin:auto;backdrop-filter:none}nav button{flex:none;font-size:13px;padding:8px 14px;border:1px solid #ffffff1c}nav button.on{border-color:transparent}body{padding-bottom:20px}}
 </style></head><body>
-<header><h1>👻 Ghosting <span>Scouting</span> <small style="opacity:.6">brainMachine 17728</small></h1><span id="who"></span><button class="g" id="out" onclick="auth.signOut()" hidden>Sair</button></header>
+<header><h1>🔥 Ghosting <span>Scouting</span> <small style="opacity:.6">brainMachine 17728</small></h1><span id="who"></span><button class="g" id="out" onclick="auth.signOut()" hidden>Sair</button></header>
 <nav id="nav"></nav><main id="main"></main>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -71,7 +79,7 @@ function render(soft){if(soft&&['ia','tema'].includes(tab))return;if(soft&&docum
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));V[tab]()}
 const num=id=>+($('#'+id).value)||0;
 const V={
-partidas(){M.innerHTML=`<div class="card"><h3>Nova partida</h3><div class="grid">
+partidas(){const nt=new Set(D.matches.map(x=>x.team)).size;M.innerHTML=`<div class="grid" style="margin-bottom:14px"><div class="card stat"><small>Partidas</small><b>${D.matches.length}</b></div><div class="card stat"><small>Times</small><b>${nt}</b></div><div class="card stat"><small>Pit scouts</small><b>${D.pits.length}</b></div><div class="card stat"><small>Membros</small><b>${D.members.length}</b></div></div><div class="card"><h3>Nova partida</h3><div class="grid">
  <div><label>Time #</label><input id="f_team"></div><div><label>Partida #</label><input id="f_m" type="number"></div>
  <div><label>Pontos Auto</label><input id="f_a" type="number" value="0"></div><div><label>Pontos TeleOp</label><input id="f_t" type="number" value="0"></div>
  <div><label>Pontos Endgame</label><input id="f_e" type="number" value="0"></div><div><label>Ciclos</label><input id="f_c" type="number" value="0"></div>
@@ -86,7 +94,7 @@ pit(){M.innerHTML=`<div class="card"><h3>Pit scouting</h3><div class="grid"><div
  ${D.pits.map(p=>`<div class="card"><b>${esc(p.team)} — ${esc(p.name)}</b> <button class="g" onclick="del('pits','${p.id}')">✕</button><br>${esc(p.dt)} · ${esc(p.lang)}<br>${esc(p.mech)}<br>${p.img?`<img class="th" src="${p.img}">`:''}</div>`).join('')}`},
 ranking(){const m={};D.matches.forEach(x=>{const a=m[x.team]||(m[x.team]={n:0,t:0,c:0,r:0,d:0});a.n++;a.t+=x.auto+x.tele+x.end;a.c+=x.cycles;a.r+=x.rel;a.d+=x.def});
  const rows=Object.entries(m).map(([k,a])=>({k,n:a.n,t:a.t/a.n,c:a.c/a.n,r:a.r/a.n,d:a.d/a.n})).sort((a,b)=>b.t-a.t),f=v=>v.toFixed(1);
- M.innerHTML=`<div class="card"><h3>Ranking / Pick list</h3><table><tr><th>#</th><th>Time</th><th>Partidas</th><th>Pts médio</th><th>Ciclos</th><th>Confiab.</th><th>Defesa</th></tr>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.k)}</td><td>${r.n}</td><td>${f(r.t)}</td><td>${f(r.c)}</td><td>${f(r.r)}</td><td>${f(r.d)}</td></tr>`).join('')}</table></div>`},
+ M.innerHTML=`<div class="grid" style="margin-bottom:14px">${rows.slice(0,3).map((r,i)=>`<div class="card stat"><small>${["🥇","🥈","🥉"][i]} #${i+1}</small><b>${esc(r.k)}</b><span>${f(r.t)} pts médios</span></div>`).join("")}</div><div class="card"><h3>Ranking / Pick list</h3><table><tr><th>#</th><th>Time</th><th>Partidas</th><th>Pts médio</th><th>Ciclos</th><th>Confiab.</th><th>Defesa</th></tr>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.k)}</td><td>${r.n}</td><td>${f(r.t)}</td><td>${f(r.c)}</td><td>${f(r.r)}</td><td>${f(r.d)}</td></tr>`).join('')}</table></div>`},
 ia(){const a=ls('ai',{base:'https://integrate.api.nvidia.com/v1',model:'meta/llama-3.1-70b-instruct',key:'',fk:'',fr:'',vis:false});
  M.innerHTML=`<div class="card"><details><summary>⚙️ Configurar IA (salvo só neste navegador)</summary><div class="grid">
  <div><label>Provedor</label><select onchange="preset(this.value)"><option value="">Escolher...</option><option value="https://integrate.api.nvidia.com/v1|meta/llama-3.1-70b-instruct">NVIDIA</option><option value="https://openrouter.ai/api/v1|meta-llama/llama-3.1-70b-instruct">OpenRouter</option><option value="https://api.openai.com/v1|gpt-4o-mini">OpenAI</option></select></div>
@@ -103,7 +111,7 @@ equipe(){M.innerHTML=`<div class="card"><h3>${esc(TD.name)} #${esc(TD.number)}</
  <p>${rulesBtn}</p></div>${ROLE==='admin'?`<div class="card"><h3>Pedidos de entrada</h3>${D.requests.map(r=>`<div>${esc(r.name)} (${esc(r.email)}) <button onclick="approve('${r.id}')">Aprovar</button> <button class="g" onclick="reject('${r.id}')">Recusar</button></div>`).join('')||'Nenhum pedido.'}</div>`:''}
  <div class="card"><h3>Membros</h3>${D.members.map(m=>`<div>${esc(m.name)} — ${m.role} ${ROLE==='admin'&&m.id!==U.uid?`<button class="g" onclick="del('members','${m.id}')">Remover</button>`:''}</div>`).join('')}</div>`},
 tema(){const t=ls('theme',{});const c=(k,l,d)=>`<div><label>${l}</label><input type="color" id="t_${k}" value="${t[k]||d}"></div>`;
- M.innerHTML=`<div class="card"><h3>Personalizar</h3><div class="grid">${c('bg','Fundo','#0d0f1a')}${c('card','Cartões','#171a2b')}${c('tx','Texto','#e8eaf6')}${c('ac','Destaque','#8b5cf6')}
+ M.innerHTML=`<div class="card"><h3>Personalizar</h3><div class="grid">${c('bg','Fundo','#120f0d')}${c('card','Cartões','#1e1814')}${c('tx','Texto','#f6ede6')}${c('ac','Destaque','#ff6a1a')}
  <div><label>Fonte</label><select id="t_font">${['system-ui,sans-serif','Georgia,serif','"Courier New",monospace','Verdana,sans-serif'].map(f=>`<option ${t.font===f?'selected':''}>${esc(f)}</option>`).join('')}</select></div></div><br>
  <button onclick="saveTheme()">Aplicar</button> <button class="g" onclick="localStorage.removeItem('theme');applyTheme();render()">Restaurar</button></div>`}};
 /* ---------- ações ---------- */
